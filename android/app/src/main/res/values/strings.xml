@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Stjernejakt</string>
+    <string name="title_activity_main">Stjernejakt</string>
+    <string name="package_name">no.haako.stjernejakt</string>
+    <string name="custom_url_scheme">no.haako.stjernejakt</string>
+</resources>

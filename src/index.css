@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 200 45% 88%;
+    --foreground: 215 25% 27%;
+
+    --card: 200 40% 96%;
+    --card-foreground: 215 25% 27%;
+
+    --popover: 200 40% 96%;
+    --popover-foreground: 215 25% 27%;
+
+    --primary: 215 60% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 145 40% 65%;
+    --secondary-foreground: 215 25% 27%;
+
+    --muted: 200 30% 85%;
+    --muted-foreground: 215 15% 50%;
+
+    --accent: 45 95% 60%;
+    --accent-foreground: 215 25% 27%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 25% 88%;
+    --input: 200 25% 90%;
+    --ring: 215 60% 35%;
+
+    --radius: 1.5rem;
+    
+    --star-gold: 45 95% 55%;
+    --reward-pink: 340 75% 70%;
+    --success-green: 145 60% 50%;
+    --sky-blue: 200 55% 75%;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 215 25% 15%;
+    --foreground: 200 40% 96%;
+
+    --card: 215 25% 20%;
+    --card-foreground: 200 40% 96%;
+
+    --popover: 215 25% 20%;
+    --popover-foreground: 200 40% 96%;
+
+    --primary: 200 70% 60%;
+    --primary-foreground: 215 25% 15%;
+
+    --secondary: 145 30% 35%;
+    --secondary-foreground: 200 40% 96%;
+
+    --muted: 215 20% 25%;
+    --muted-foreground: 200 20% 65%;
+
+    --accent: 45 85% 50%;
+    --accent-foreground: 215 25% 15%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 200 40% 96%;
+
+    --border: 215 20% 30%;
+    --input: 215 20% 30%;
+    --ring: 200 70% 60%;
+    
+    --star-gold: 45 85% 50%;
+    --reward-pink: 340 65% 60%;
+    --success-green: 145 50% 45%;
+    --sky-blue: 200 45% 45%;
+    
+    --sidebar-background: 215 25% 15%;
+    --sidebar-foreground: 200 40% 96%;
+    --sidebar-primary: 200 70% 60%;
+    --sidebar-primary-foreground: 215 25% 15%;
+    --sidebar-accent: 215 20% 25%;
+    --sidebar-accent-foreground: 200 40% 96%;
+    --sidebar-border: 215 20% 30%;
+    --sidebar-ring: 200 70% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
