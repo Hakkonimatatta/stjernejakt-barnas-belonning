@@ -171,10 +171,6 @@ const ParentMode = ({
   };
 
   const handleDeleteChild = (childId: string) => {
-    if (children.length === 1) {
-      toast.error(t("mustHaveOneChild"));
-      return;
-    }
     onDeleteChild(childId);
     if (selectedChildId === childId) {
       setSelectedChildId(null);
@@ -274,7 +270,6 @@ const ParentMode = ({
         <Card className="max-w-md w-full p-8 bg-card border-4 border-border shadow-lg">
           <div className="space-y-6">
             <div className="text-center">
-              <div className="text-6xl mb-4">🔒</div>
               <h1 className="text-3xl font-bold text-primary mb-2">{t("parentMode")}</h1>
               <p className="text-muted-foreground">{t("enterPin")}</p>
             </div>
@@ -613,9 +608,8 @@ const ParentMode = ({
                   variant="destructive"
                   size="sm"
                   onClick={() => handleDeleteChild(child.id)}
-                  disabled={children.length === 1}
                 >
-                  Slett
+                  {t("delete")}
                 </Button>
               </div>
             ))}
@@ -676,8 +670,6 @@ const ParentMode = ({
         <Card className="p-4 bg-muted/50 border-2 border-dashed border-muted-foreground/30">
           <h3 className="font-semibold text-muted-foreground mb-2">💡 {t("tips")}</h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>{t("tip1")}</li>
-            <li>{t("tip2")}</li>
             <li>{t("tip3")}</li>
           </ul>
         </Card>

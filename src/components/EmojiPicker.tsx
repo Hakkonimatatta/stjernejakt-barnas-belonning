@@ -116,7 +116,19 @@ const EmojiPicker = ({ value, onChange, placeholder = "Velg emoji", quickEmojis 
   const [search, setSearch] = useState("");
 
   const filteredEmojis = search
-    ? allEmojis.filter((emoji) => emoji.includes(search))
+    ? (() => {
+        const lowerSearch = search.toLowerCase();
+        const matchedEmojis = new Set<string>();
+        
+        // Search by keywords
+        for (const [keyword, emojis] of Object.entries(keywordEmojis)) {
+          if (keyword.includes(lowerSearch) || lowerSearch.includes(keyword)) {
+            emojis.forEach(emoji => matchedEmojis.add(emoji));
+          }
+        }
+        
+        return Array.from(matchedEmojis);
+      })()
     : [];
 
   const handleSelect = (emoji: string) => {

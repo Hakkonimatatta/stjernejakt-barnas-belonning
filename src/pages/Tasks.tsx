@@ -37,18 +37,22 @@ const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
     void playSuccessSequence();
   };
 
-  const triggerConfetti = () => {
-    // Lightweight, worker-based confetti to avoid WebView freezes
-    import("@/lib/confetti").then(({ fireConfetti }) => fireConfetti()).catch(() => void 0);
+  const triggerConfetti = async () => {
+    try {
+      const { fireConfetti } = await import("@/lib/confetti");
+      fireConfetti();
+    } catch (error) {
+      console.error("Failed to load confetti:", error);
+    }
   };
 
   const handleComplete = (task: Task) => {
     if (!task.completed) {
       onCompleteTask(task.id);
       playSuccessSound();
-      triggerConfetti();
+      void triggerConfetti();
       toast.success(t("taskCompleted", { points: task.points }), {
-        duration: 3000,
+        duration: 2000,
       });
     }
   };

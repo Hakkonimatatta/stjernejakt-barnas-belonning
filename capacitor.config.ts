@@ -6,6 +6,15 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'https'
+  },
+  plugins: {
+    Camera: {
+      presentationStyle: 'popover'
+    }
+  },
+  ios: {
+    // Camera permission will be requested automatically when accessing camera
+    // The permission message is defined in Info.plist
   }
 };
 

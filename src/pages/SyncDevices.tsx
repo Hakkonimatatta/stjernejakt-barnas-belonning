@@ -2,8 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Smartphone, RefreshCw, Wifi, Users, QrCode, Camera, Copy, Mail, MessageSquare } from "lucide-react";
+import { ArrowLeft, Smartphone, RefreshCw, Wifi, Users, QrCode, Camera, Mail } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Html5Qrcode } from "html5-qrcode";
 import { toast } from "sonner";
@@ -20,7 +19,6 @@ interface SyncDevicesProps {
 const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
   const navigate = useNavigate();
   const [showQR, setShowQR] = useState(false);
-  const [showText, setShowText] = useState(false);
   const [importText, setImportText] = useState("");
   const [scanning, setScanning] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -30,19 +28,7 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
 
   const handleExportData = () => {
     setShowQR(true);
-    setShowText(false);
     toast.success(t("qrCodeGenerated"));
-  };
-
-  const handleShowTextExport = () => {
-    setShowText(true);
-    setShowQR(false);
-    toast.success(t("copyTextToShare"));
-  };
-
-  const handleCopyText = () => {
-    navigator.clipboard.writeText(dataString);
-    toast.success(t("copiedToClipboard"));
   };
 
   const handleShareViaEmail = () => {
@@ -50,13 +36,6 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
     const body = encodeURIComponent(`${t("shareDataBody")}\n\n${dataString}`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
     toast.success(t("openingEmailApp"));
-  };
-
-  const handleShareViaSMS = () => {
-    const body = encodeURIComponent(dataString);
-    // SMS protocol works on both mobile and desktop
-    window.location.href = `sms:?body=${body}`;
-    toast.success(t("openingSMSApp"));
   };
 
   const handleImportText = () => {
@@ -198,27 +177,13 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
             </p>
 
             <div className="bg-gradient-to-br from-white to-muted/30 p-6 rounded-2xl shadow-inner mb-6">
-              {!showQR && !showText && !scanning && (
+              {!showQR && !scanning && (
                 <div className="w-44 h-44 mx-auto bg-white rounded-xl flex items-center justify-center border border-muted shadow-sm">
                   <div className="text-center">
                     <div className="text-5xl mb-3">📱</div>
                     <p className="text-sm font-medium text-muted-foreground">{t("exportImport")}</p>
                     <p className="text-xs text-muted-foreground/70 mt-1">{t("selectMethodBelow")}</p>
                   </div>
-                </div>
-              )}
-
-              {showText && !scanning && (
-                <div className="w-full max-w-md mx-auto">
-                  <Textarea
-                    value={dataString}
-                    readOnly
-                    className="font-mono text-xs h-40 mb-3"
-                  />
-                  <Button onClick={handleCopyText} className="w-full" size="sm">
-                    <Copy className="mr-2 h-4 w-4" />
-                    {t("copyText")}
-                  </Button>
                 </div>
               )}
 
@@ -261,35 +226,14 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
                     {t("scanQRCode")}
                   </Button>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      onClick={handleShareViaEmail}
-                      variant="outline"
-                      className="h-12"
-                      disabled={dataSize > 50000}
-                    >
-                      <Mail className="mr-2 h-4 w-4" />
-                      {t("shareViaEmail")}
-                    </Button>
-                    
-                    <Button
-                      onClick={handleShareViaSMS}
-                      variant="outline"
-                      className="h-12"
-                      disabled={dataSize > 1000}
-                    >
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      {t("shareViaSMS")}
-                    </Button>
-                  </div>
-
                   <Button
-                    onClick={handleShowTextExport}
-                    variant="secondary"
+                    onClick={handleShareViaEmail}
+                    variant="outline"
                     className="w-full h-12"
+                    disabled={dataSize > 50000}
                   >
-                    <Copy className="mr-2 h-5 w-5" />
-                    {t("showAsText")}
+                    <Mail className="mr-2 h-4 w-4" />
+                    {t("shareViaEmail")}
                   </Button>
                 </div>
                 

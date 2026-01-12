@@ -1,12 +1,10 @@
 // Audio Manager for iOS compatibility
-// iOS Safari requires user interaction before AudioContext can be used and often starts suspended.
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const AudioCtx = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext | undefined;
+// Using simple pleasant tones instead of harsh synthetic sounds
 
 let audioContext: AudioContext | null = null;
 
 const ensureAudioContext = async (): Promise<AudioContext | null> => {
+  const AudioCtx = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext | undefined;
   if (!AudioCtx) return null;
 
   if (!audioContext) {
@@ -21,7 +19,6 @@ const ensureAudioContext = async (): Promise<AudioContext | null> => {
   if (audioContext.state === "suspended") {
     try {
       await audioContext.resume();
-      // Add small delay after resuming to ensure ready state
       await new Promise(resolve => setTimeout(resolve, 100));
     } catch (e) {
       console.warn("Failed to resume AudioContext:", e);
@@ -39,89 +36,98 @@ const withAudioContext = async (fn: (ctx: AudioContext) => void) => {
 };
 
 export const initializeAudioContext = () => {
-  // Fire and forget; we still await resume when playing
   void ensureAudioContext();
 };
 
-export const playTone = async (frequency: number, duration: number = 0.2, volume: number = 0.3) => {
+// Create a pleasant piano-like tone
+const createPianoNote = (ctx: AudioContext, frequency: number, startTime: number, duration: number, volume: number = 0.15) => {
+  // Main oscillator (fundamental frequency)
+  const osc1 = ctx.createOscillator();
+  const gain1 = ctx.createGain();
+  
+  // Harmonic oscillators for richer sound
+  const osc2 = ctx.createOscillator();
+  const gain2 = ctx.createGain();
+  
+  const osc3 = ctx.createOscillator();
+  const gain3 = ctx.createGain();
+
+  // Use sine waves for softer, rounder sound
+  osc1.type = "sine";
+  osc2.type = "sine";
+  osc3.type = "sine";
+
+  // Set frequencies - fundamental and harmonics
+  osc1.frequency.setValueAtTime(frequency, startTime);
+  osc2.frequency.setValueAtTime(frequency * 2, startTime); // Octave
+  osc3.frequency.setValueAtTime(frequency * 3, startTime); // Fifth
+
+  // Piano-like envelope: quick attack, slow decay
+  const attackTime = 0.01;
+  const decayTime = duration * 0.3;
+  const sustainLevel = volume * 0.6;
+  const releaseTime = duration * 0.4;
+
+  // Main tone
+  gain1.gain.setValueAtTime(0, startTime);
+  gain1.gain.linearRampToValueAtTime(volume, startTime + attackTime);
+  gain1.gain.linearRampToValueAtTime(sustainLevel, startTime + attackTime + decayTime);
+  gain1.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+  // Harmonic (quieter)
+  gain2.gain.setValueAtTime(0, startTime);
+  gain2.gain.linearRampToValueAtTime(volume * 0.3, startTime + attackTime);
+  gain2.gain.exponentialRampToValueAtTime(0.001, startTime + duration * 0.7);
+
+  // Third harmonic (very quiet)
+  gain3.gain.setValueAtTime(0, startTime);
+  gain3.gain.linearRampToValueAtTime(volume * 0.1, startTime + attackTime);
+  gain3.gain.exponentialRampToValueAtTime(0.001, startTime + duration * 0.5);
+
+  osc1.connect(gain1);
+  gain1.connect(ctx.destination);
+  
+  osc2.connect(gain2);
+  gain2.connect(ctx.destination);
+  
+  osc3.connect(gain3);
+  gain3.connect(ctx.destination);
+
+  osc1.start(startTime);
+  osc2.start(startTime);
+  osc3.start(startTime);
+  
+  osc1.stop(startTime + duration);
+  osc2.stop(startTime + duration);
+  osc3.stop(startTime + duration);
+};
+
+
+export const playTone = async (frequency: number, duration: number = 0.2, volume: number = 0.12) => {
   await withAudioContext((ctx) => {
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(frequency, now);
-
-    // Smoother attack/release to avoid clicks
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(volume, now + 0.01);
-    gain.gain.linearRampToValueAtTime(volume * 0.95, now + duration - 0.02);
-    gain.gain.linearRampToValueAtTime(0, now + duration);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(now);
-    osc.stop(now + duration);
+    createPianoNote(ctx, frequency, ctx.currentTime, duration, volume);
   });
 };
 
 export const playWelcomeSequence = async () => {
   await withAudioContext((ctx) => {
     const now = ctx.currentTime;
-    const playNote = (freq: number, start: number, duration: number) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, now + start);
-
-      // Smoother envelope
-      gain.gain.setValueAtTime(0, now + start);
-      gain.gain.linearRampToValueAtTime(0.2, now + start + 0.02);
-      gain.gain.linearRampToValueAtTime(0.19, now + start + duration - 0.05);
-      gain.gain.linearRampToValueAtTime(0, now + start + duration);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(now + start);
-      osc.stop(now + start + duration);
-    };
-
-    // Welcome melody: C5 - E5 - G5
-    playNote(523.25, 0, 0.2);      // C5
-    playNote(659.25, 0.2, 0.2);    // E5
-    playNote(783.99, 0.4, 0.4);    // G5
+    
+    // Pleasant welcome melody: C5 - E5 - G5 (C major chord)
+    createPianoNote(ctx, 523.25, now, 0.3, 0.12);      // C5
+    createPianoNote(ctx, 659.25, now + 0.25, 0.3, 0.12); // E5
+    createPianoNote(ctx, 783.99, now + 0.5, 0.5, 0.15);  // G5
   });
 };
 
 export const playSuccessSequence = async () => {
   await withAudioContext((ctx) => {
     const now = ctx.currentTime;
-    const playNote = (freq: number, start: number, duration: number) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, now + start);
-
-      // Smoother envelope
-      gain.gain.setValueAtTime(0, now + start);
-      gain.gain.linearRampToValueAtTime(0.2, now + start + 0.02);
-      gain.gain.linearRampToValueAtTime(0.19, now + start + duration - 0.03);
-      gain.gain.linearRampToValueAtTime(0, now + start + duration);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(now + start);
-      osc.stop(now + start + duration);
-    };
-
-    // Success: C5 - C5 - G5
-    playNote(523.25, 0, 0.15);      // C5
-    playNote(523.25, 0.15, 0.15);   // C5
-    playNote(783.99, 0.3, 0.3);     // G5
+    
+    // Success jingle: C5 - E5 - G5 - C6
+    createPianoNote(ctx, 523.25, now, 0.15, 0.1);        // C5
+    createPianoNote(ctx, 659.25, now + 0.13, 0.15, 0.1); // E5
+    createPianoNote(ctx, 783.99, now + 0.26, 0.15, 0.12); // G5
+    createPianoNote(ctx, 1046.50, now + 0.39, 0.4, 0.13); // C6
   });
 };

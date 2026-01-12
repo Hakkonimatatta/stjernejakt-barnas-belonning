@@ -99,3 +99,47 @@ export const saveData = (data: AppData): void => {
   }
 };
 
+// Translation maps for default tasks and rewards
+const taskTranslationMap: Record<string, { no: string; en: string }> = {
+  "🧹": { no: "Rydd rommet", en: "Clean your room" },
+  "🪥": { no: "Puss tennene", en: "Brush your teeth" },
+  "🐕": { no: "Gå tur med hunden", en: "Walk the dog" },
+  "⚽": { no: "Lek ute", en: "Play outside" },
+};
+
+const rewardTranslationMap: Record<string, { no: string; en: string }> = {
+  "🍦": { no: "Is på lørdag", en: "Ice cream on Saturday" },
+  "📱": { no: "10 min ekstra skjermtid", en: "10 extra minutes screen time" },
+  "🎠": { no: "Familieutflukt", en: "Family outing" },
+};
+
+// Translate default tasks and rewards when language changes
+export const translateDefaultItems = (data: AppData, targetLanguage: Language): AppData => {
+  return {
+    ...data,
+    children: data.children.map((child) => ({
+      ...child,
+      tasks: child.tasks.map((task) => {
+        const translation = taskTranslationMap[task.icon];
+        if (translation) {
+          // Check if this task matches one of the default tasks in either language
+          if (task.name === translation.no || task.name === translation.en) {
+            return { ...task, name: translation[targetLanguage] };
+          }
+        }
+        return task;
+      }),
+      rewards: child.rewards.map((reward) => {
+        const translation = rewardTranslationMap[reward.icon];
+        if (translation) {
+          // Check if this reward matches one of the default rewards in either language
+          if (reward.name === translation.no || reward.name === translation.en) {
+            return { ...reward, name: translation[targetLanguage] };
+          }
+        }
+        return reward;
+      }),
+    })),
+  };
+};
+

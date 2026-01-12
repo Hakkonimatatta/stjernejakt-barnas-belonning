@@ -43,7 +43,33 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
     }
   }, [children.length]);
 
-  const avatars = ["👦", "�🏻", "👦🏼", "👦🏽", "👦🏾", "👦🏿", "👧", "👧🏻", "👧🏼", "👧🏽", "👧🏾", "👧🏿", "🧒", "🧒🏻", "🧒🏼", "🧒🏽", "🧒🏾", "🧒🏿", "👶", "👶🏻", "👶🏼", "👶🏽", "👶🏾", "👶🏿", "🧑", "👨", "👩", "🐻", "🐶", "🐱", "🦁", "🐼", "🦊", "🐯", "🐨", "🦌", "🐭", "🐹", "🦝", "🐸", "🦜", "🦆", "🦅", "🐢", "🐙", "🦑", "🦕", "🦖", "🐉", "🦄", "🦋", "🐝", "🐞", "🦗", "🕷️", "⭐", "🌟", "💫", "🌈"];
+  const avatars = [
+    // Boys with skin tones
+    "👦", "👦🏻", "👦🏼", "👦🏽", "👦🏾", "👦🏿",
+    // Girls with skin tones
+    "👧", "👧🏻", "👧🏼", "👧🏽", "👧🏾", "👧🏿",
+    // Gender neutral with skin tones
+    "🧒", "🧒🏻", "🧒🏼", "🧒🏽", "🧒🏾", "🧒🏿",
+    // Babies with skin tones
+    "👶", "👶🏻", "👶🏼", "👶🏽", "👶🏾", "👶🏿",
+    // Blonde hair
+    "👱‍♂️", "👱🏻‍♂️", "👱🏼‍♂️", "👱🏽‍♂️", "👱🏾‍♂️", "👱🏿‍♂️",
+    "👱‍♀️", "👱🏻‍♀️", "👱🏼‍♀️", "👱🏽‍♀️", "👱🏾‍♀️", "👱🏿‍♀️",
+    // Curly/red haired variants
+    "🧑‍🦱", "👨‍🦱", "👩‍🦱", "🧑‍🦲", "👨‍🦲", "👩‍🦲",
+    // Brown/white haired variants
+    "🧑‍🦳", "👨‍🦳", "👩‍🦳",
+    // Curly/afro hair
+    "🧑🏻‍🦱", "👨🏻‍🦱", "👩🏻‍🦱", "🧑🏼‍🦱", "👨🏼‍🦱", "👩🏼‍🦱",
+    "🧑🏽‍🦱", "👨🏽‍🦱", "👩🏽‍🦱", "🧑🏾‍🦱", "👨🏾‍🦱", "👩🏾‍🦱",
+    "🧑🏿‍🦱", "👨🏿‍🦱", "👩🏿‍🦱",
+    // Other faces
+    "🧑", "👨", "👩",
+    // Animals
+    "🐻", "🐶", "🐱", "🦁", "🐼", "🦊", "🐯", "🐨", "🦌", "🐭", "🐹", "🦝", "🐸", "🦜", "🦆", "🦅", "🐢", "🐙", "🦑", "🦕", "🦖", "🐉",
+    // Fantasy & nature
+    "🦄", "🦋", "🐝", "🐞", "🦗", "🕷️", "⭐", "🌟", "💫", "🌈",
+  ];
 
   const handleSelect = (childId: string) => {
     playWelcomeSound();
@@ -138,11 +164,11 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
                 </div>
               </Card>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md flex flex-col max-h-[90vh]">
               <DialogHeader>
                 <DialogTitle className="text-2xl">{t("addNewChild")}</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 py-4">
+              <div className="space-y-4 py-4 overflow-y-auto flex-1">
                 <div>
                   <Label htmlFor="childName">{t("name")}</Label>
                   <Input
@@ -158,14 +184,14 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
 
                 <div>
                   <Label>{t("selectAvatar")}</Label>
-                  <div className="grid grid-cols-5 gap-2">
+                  <div className="grid grid-cols-5 gap-2 max-h-72 overflow-y-auto pr-2">
                     {avatars.map((avatar) => (
                       <Button
                         key={avatar}
                         type="button"
                         variant={childAvatar === avatar ? "default" : "outline"}
                         onClick={() => setChildAvatar(avatar)}
-                        className="h-14 text-3xl"
+                        className="h-14 text-3xl flex-shrink-0"
                       >
                         {avatar}
                       </Button>
@@ -173,14 +199,14 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
                   </div>
                   {errors.avatar && <p className="text-sm text-destructive mt-1">{errors.avatar}</p>}
                 </div>
-
-                <Button
-                  onClick={handleAddChild}
-                  className="w-full h-14 text-lg font-bold bg-success text-white hover:bg-success/90"
-                >
-                  {t("add")}
-                </Button>
               </div>
+
+              <Button
+                onClick={handleAddChild}
+                className="w-full h-14 text-lg font-bold bg-success text-white hover:bg-success/90 flex-shrink-0"
+              >
+                {t("add")}
+              </Button>
             </DialogContent>
           </Dialog>
         </div>

@@ -98,8 +98,6 @@ export const translations = {
     resetDataWarning: "Dette sletter alle oppgaver, belønninger, barn og poeng. Dette kan ikke angres.",
     yesReset: "Ja, tilbakestill",
     tips: "Tips",
-    tip1: "• Oppgaver og belønninger tilbakestilles automatisk etter 2 sekunder",
-    tip2: "• Du kan endre PIN-koden når som helst",
     tip3: "• Spør barna om hvilke oppgaver de ønsker å gjøre og belønninger de kan kjøpe i butikken",
     language: "Språk",
     norwegian: "Norsk",
@@ -263,8 +261,7 @@ export const translations = {
     resetDataWarning: "This will delete all tasks, rewards, children and points. This cannot be undone.",
     yesReset: "Yes, reset",
     tips: "Tips",
-    tip1: "• Tasks and rewards automatically reset after 2 seconds",
-    tip2: "• You can change the PIN code at any time",
+
     tip3: "• Ask the children which tasks they want to do and rewards they can buy in the shop",
     language: "Language",
     norwegian: "Norsk",

@@ -46,7 +46,7 @@ export function fireConfetti(opts?: Options) {
     spread: 60,
     origin: { y: 0.6 },
     disableForReducedMotion: false,
-    ticks: 60,
+    ticks: 200,
     startVelocity: 35,
     scalar: 0.9,
   };
@@ -55,5 +55,5 @@ export function fireConfetti(opts?: Options) {
 
   window.setTimeout(() => {
     cleanup();
-  }, 800);
+  }, 3000);
 }
