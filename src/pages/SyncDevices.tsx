@@ -7,7 +7,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Html5Qrcode } from "html5-qrcode";
 import { toast } from "sonner";
 import { AppData } from "@/types";
-import { saveData } from "@/lib/storage";
+import { saveData, mergeAppData } from "@/lib/storage";
 import { translate, Language } from "@/lib/i18n";
 
 interface SyncDevicesProps {
@@ -32,8 +32,13 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
   };
 
   const handleShareViaEmail = () => {
+    // Create a deep-link URL with encoded data
+    const encodedData = encodeURIComponent(dataString);
+    const deepLink = `${window.location.origin}?syncData=${encodedData}`;
+    
     const subject = encodeURIComponent(t("shareDataSubject"));
-    const body = encodeURIComponent(`${t("shareDataBody")}\n\n${dataString}`);
+    const emailBody = `${t("shareDataBody")}\n\n${deepLink}`;
+    const body = encodeURIComponent(emailBody);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
     toast.success(t("openingEmailApp"));
   };
@@ -46,8 +51,9 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
         throw new Error("Invalid data");
       }
 
-      onImportData(importedData);
-      saveData(importedData);
+      const mergedData = mergeAppData(appData, importedData);
+      onImportData(mergedData);
+      saveData(mergedData);
       toast.success(t("dataImported"));
       setImportText("");
     } catch (err) {
@@ -98,6 +104,17 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
 
   const handleScanSuccess = async (decodedText: string) => {
     try {
+      // Stop scanner immediately to prevent multiple scans
+      if (scannerRef.current) {
+        try {
+          await scannerRef.current.stop();
+          scannerRef.current.clear();
+          scannerRef.current = null;
+        } catch (stopErr) {
+          console.error("Error stopping scanner:", stopErr);
+        }
+      }
+
       const importedData = JSON.parse(decodedText) as AppData;
       
       // Validate basic structure
@@ -105,20 +122,16 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
         throw new Error("Invalid data");
       }
 
-      onImportData(importedData);
-      saveData(importedData);
+      // Merge the data - combines points and syncs tasks
+      const mergedData = mergeAppData(appData, importedData);
+      onImportData(mergedData);
+      saveData(mergedData);
       toast.success(t("dataImported"));
-      
-      // Stop scanner
-      if (scannerRef.current) {
-        await scannerRef.current.stop();
-        scannerRef.current.clear();
-        scannerRef.current = null;
-      }
       setScanning(false);
     } catch (err) {
       console.error("Import error:", err);
       toast.error(t("invalidQRCode"));
+      setScanning(false);
     }
   };
 
@@ -144,7 +157,7 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
       <div className="max-w-md mx-auto space-y-6 pt-4">
         <Button
           variant="ghost"
-          onClick={() => navigate("/parent")}
+          onClick={() => navigate(-1)}
           className="hover:bg-white/50"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

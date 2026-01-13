@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { loadData, saveData, getDefaultTasks, getDefaultRewards } from "@/lib/storage";
+import { loadData, saveData, getDefaultTasks, getDefaultRewards, mergeAppData } from "@/lib/storage";
 import { autoResetExpiredItems } from "@/lib/autoReset";
 import { loadLanguage, saveLanguage, Language } from "@/lib/i18n";
 import { AppData, Child, Task, Reward } from "@/types";
@@ -31,6 +31,32 @@ const App = () => {
   useEffect(() => {
     saveData(appData);
   }, [appData]);
+
+  // Handle deep-link from URL parameter (e.g., from email)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const syncData = params.get("syncData");
+    
+    if (syncData) {
+      try {
+        const decodedData = JSON.parse(decodeURIComponent(syncData)) as AppData;
+        
+        // Validate basic structure
+        if (decodedData.children && decodedData.settings) {
+          // Merge the remote data with local data
+          const mergedData = mergeAppData(appData, decodedData);
+          setAppData(mergedData);
+          
+          // Clean up URL to prevent double-import on refresh
+          window.history.replaceState({}, document.title, window.location.pathname);
+          
+          console.log("Data synced from deep-link");
+        }
+      } catch (err) {
+        console.error("Error processing deep-link data:", err);
+      }
+    }
+  }, []); // Run only once on mount
 
   // Sjekk for auto-reset hvert 100ms for umiddelbar reset
   useEffect(() => {
@@ -62,6 +88,17 @@ const App = () => {
                 tasks: c.tasks.map((t) =>
                   t.id === taskId ? { ...t, completed: true, completedAt: Date.now() } : t
                 ),
+                activities: [
+                  ...(c.activities || []),
+                  {
+                    id: `activity_${Date.now()}`,
+                    type: "task" as const,
+                    name: task.name,
+                    icon: task.icon,
+                    points: task.points,
+                    timestamp: Date.now(),
+                  },
+                ],
               }
             : c
         ),
@@ -89,6 +126,17 @@ const App = () => {
                 rewards: c.rewards.map((r) =>
                   r.id === rewardId ? { ...r, purchased: true, purchasedAt: Date.now() } : r
                 ),
+                activities: [
+                  ...(c.activities || []),
+                  {
+                    id: `activity_${Date.now()}`,
+                    type: "reward" as const,
+                    name: reward.name,
+                    icon: reward.icon,
+                    points: -reward.cost,
+                    timestamp: Date.now(),
+                  },
+                ],
               }
             : c
         ),

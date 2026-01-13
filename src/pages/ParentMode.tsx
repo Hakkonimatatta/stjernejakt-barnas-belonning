@@ -9,6 +9,7 @@ import { z } from "zod";
 import { Task, Reward, Child } from "@/types";
 import EmojiPicker, { getSuggestedEmojis } from "@/components/EmojiPicker";
 import { Language, translate } from "@/lib/i18n";
+import ActivityLog from "@/components/ActivityLog";
 
 interface ParentModeProps {
   onResetTasks: (childId: string) => void;
@@ -315,27 +316,27 @@ const ParentMode = ({
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-4 sm:p-6">
       <div className="max-w-md mx-auto space-y-6">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-3xl font-bold text-primary">{t("parentMode")}</h1>
-          <Button variant="outline" onClick={() => navigate("/")}>
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary">{t("parentMode")}</h1>
+          <Button variant="outline" onClick={() => navigate("/")} className="text-sm">
             {t("back")}
           </Button>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button
             onClick={() => onChangeLanguage("no")}
             variant={language === "no" ? "default" : "outline"}
-            className="h-10"
+            className="h-10 text-sm"
           >
             {t("norwegian")}
           </Button>
           <Button
             onClick={() => onChangeLanguage("en")}
             variant={language === "en" ? "default" : "outline"}
-            className="h-10"
+            className="h-10 text-sm"
           >
             {t("english")}
           </Button>
@@ -368,6 +369,13 @@ const ParentMode = ({
 
         {selectedChild && (
           <>
+            <Card className="p-6 bg-card border-4 border-border shadow-lg">
+              <h2 className="text-2xl font-bold text-card-foreground mb-4">
+                {t("activityLog", { name: selectedChild.name })}
+              </h2>
+              <ActivityLog activities={selectedChild.activities} />
+            </Card>
+
             <Card className="p-6 bg-card border-4 border-border shadow-lg">
               <h2 className="text-2xl font-bold text-card-foreground mb-4">
                 {t("tasksForChild", { name: selectedChild.name })}
@@ -588,6 +596,7 @@ const ParentMode = ({
                 </Button>
               </div>
             </Card>
+
           </>
         )}
 

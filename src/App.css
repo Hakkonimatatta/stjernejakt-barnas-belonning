@@ -1,8 +1,29 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   text-align: center;
+  overflow-x: hidden;
+}
+
+/* Fix for iOS Safari viewport issues */
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+  -webkit-user-zoom: 1;
+  user-zoom: 1;
+}
+
+/* Disable iOS Safari button focus delay/styling */
+button, a {
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
 
 .logo {

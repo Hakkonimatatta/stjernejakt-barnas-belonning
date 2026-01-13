@@ -113,6 +113,75 @@ const rewardTranslationMap: Record<string, { no: string; en: string }> = {
   "🎠": { no: "Familieutflukt", en: "Family outing" },
 };
 
+// Merge data from two devices - combines points and syncs tasks/rewards
+export const mergeAppData = (localData: AppData, remoteData: AppData): AppData => {
+  const mergedChildren = localData.children.map((localChild) => {
+    const remoteChild = remoteData.children.find((c) => c.id === localChild.id);
+    
+    if (!remoteChild) {
+      // Child only exists locally
+      return localChild;
+    }
+
+    // Merge tasks - keep both, mark completed if either has it completed
+    const taskMap = new Map<string, any>();
+    
+    localChild.tasks.forEach((task) => {
+      taskMap.set(task.id, task);
+    });
+    
+    remoteChild.tasks.forEach((task) => {
+      const existing = taskMap.get(task.id);
+      if (existing) {
+        // If either device has it completed, mark as completed
+        taskMap.set(task.id, { ...existing, completed: existing.completed || task.completed });
+      } else {
+        taskMap.set(task.id, task);
+      }
+    });
+
+    // Merge rewards - keep both, mark purchased if either has it purchased
+    const rewardMap = new Map<string, any>();
+    
+    localChild.rewards.forEach((reward) => {
+      rewardMap.set(reward.id, reward);
+    });
+    
+    remoteChild.rewards.forEach((reward) => {
+      const existing = rewardMap.get(reward.id);
+      if (existing) {
+        // If either device has it purchased, mark as purchased
+        rewardMap.set(reward.id, { ...existing, purchased: existing.purchased || reward.purchased });
+      } else {
+        rewardMap.set(reward.id, reward);
+      }
+    });
+
+    // Merge points - add them together
+    const mergedPoints = localChild.points + remoteChild.points;
+
+    return {
+      ...localChild,
+      points: mergedPoints,
+      tasks: Array.from(taskMap.values()),
+      rewards: Array.from(rewardMap.values()),
+    };
+  });
+
+  // Add any children that only exist in remote data
+  const localChildIds = new Set(localData.children.map((c) => c.id));
+  remoteData.children.forEach((remoteChild) => {
+    if (!localChildIds.has(remoteChild.id)) {
+      mergedChildren.push(remoteChild);
+    }
+  });
+
+  return {
+    children: mergedChildren,
+    settings: localData.settings, // Keep local settings (PIN, etc)
+  };
+};
+
 // Translate default tasks and rewards when language changes
 export const translateDefaultItems = (data: AppData, targetLanguage: Language): AppData => {
   return {

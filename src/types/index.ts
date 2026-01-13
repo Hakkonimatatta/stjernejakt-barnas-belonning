@@ -1,3 +1,12 @@
+export interface Activity {
+  id: string;
+  type: "task" | "reward"; // 'task' = task completed, 'reward' = reward purchased
+  name: string;
+  icon: string;
+  points: number;
+  timestamp: number;
+}
+
 export interface Child {
   id: string;
   name: string;
@@ -5,6 +14,7 @@ export interface Child {
   points: number;
   tasks: Task[];
   rewards: Reward[];
+  activities?: Activity[]; // Activity log
 }
 
 export interface Task {

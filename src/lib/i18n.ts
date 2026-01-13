@@ -111,6 +111,7 @@ export const translations = {
     tasksForChild: "Oppgaver for {name}",
     rewardsForChild: "Belønninger for {name}",
     pointsForChild: "Poeng for {name}",
+    activityLog: "Aktivitetslogg for {name}",
     existingRewards: "Eksisterende belønninger",
     
     // Toasts
@@ -275,6 +276,7 @@ export const translations = {
     tasksForChild: "Tasks for {name}",
     rewardsForChild: "Rewards for {name}",
     pointsForChild: "Points for {name}",
+    activityLog: "Activity Log for {name}",
     existingRewards: "Existing rewards",
     
     // Toasts
