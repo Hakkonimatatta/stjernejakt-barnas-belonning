@@ -23,9 +23,19 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Stjernejobb" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/stjernejakt-barnas-belonning/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/stjernejakt-barnas-belonning/icon-192.png" />
+    <link rel="manifest" href="/stjernejakt-barnas-belonning/manifest.json" />
+    <script type="text/javascript">
+      // Handle redirects from 404.html
+      (function(){
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.href) {
+          history.replaceState(null, null, redirect);
+        }
+      }());
+    </script>
   </head>
 
   <body>
