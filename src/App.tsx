@@ -12,6 +12,7 @@ import Tasks from "./pages/Tasks";
 import Shop from "./pages/Shop";
 import ParentMode from "./pages/ParentMode";
 import SyncDevices from "./pages/SyncDevices";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
@@ -321,6 +322,7 @@ const App = () => {
               />
             }
           />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
