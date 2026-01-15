@@ -62,6 +62,8 @@ const ParentMode = ({
   const [confirmPin, setConfirmPin] = useState("");
   const [pinError, setPinError] = useState("");
   const [pointsToDeduct, setPointsToDeduct] = useState<Record<string, string>>({});
+  const [taskChildrenSelection, setTaskChildrenSelection] = useState<Set<string>>(new Set());
+  const [rewardChildrenSelection, setRewardChildrenSelection] = useState<Set<string>>(new Set());
 
   const t = (key: Parameters<typeof translate>[1], params?: Parameters<typeof translate>[2]) =>
     translate(language, key, params);
@@ -141,15 +143,28 @@ const ParentMode = ({
         points: Number(taskPoints),
       });
 
+      // Add to selected child
       onAddTask(selectedChildId, {
         name: validated.name,
         icon: validated.icon,
         points: validated.points,
       });
       
+      // Add to other selected children if any
+      taskChildrenSelection.forEach((childId) => {
+        if (childId !== selectedChildId) {
+          onAddTask(childId, {
+            name: validated.name,
+            icon: validated.icon,
+            points: validated.points,
+          });
+        }
+      });
+      
       setTaskName("");
       setTaskIcon("");
       setTaskPoints("5");
+      setTaskChildrenSelection(new Set());
       toast.success(t("taskAdded"));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -190,15 +205,28 @@ const ParentMode = ({
         cost: Number(rewardCost),
       });
 
+      // Add to selected child
       onAddReward(selectedChildId, {
         name: validated.name,
         icon: validated.icon,
         cost: validated.cost,
       });
       
+      // Add to other selected children if any
+      rewardChildrenSelection.forEach((childId) => {
+        if (childId !== selectedChildId) {
+          onAddReward(childId, {
+            name: validated.name,
+            icon: validated.icon,
+            cost: validated.cost,
+          });
+        }
+      });
+      
       setRewardName("");
       setRewardIcon("");
       setRewardCost("20");
+      setRewardChildrenSelection(new Set());
       toast.success(t("rewardAdded"));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -306,9 +334,14 @@ const ParentMode = ({
               </Button>
             </div>
             
-            <p className="text-xs text-center text-muted-foreground">
-              {t("defaultPin")}
-            </p>
+            <div className="text-center p-5 bg-amber-100 rounded-lg border-2 border-solid border-amber-300">
+              <p className="text-lg font-bold text-black mb-2">
+                🔓 {t("defaultPin")}
+              </p>
+              <p className="text-sm text-gray-700 font-medium">
+                {t("defaultPinHint")}
+              </p>
+            </div>
           </div>
         </Card>
       </div>
@@ -420,6 +453,36 @@ const ParentMode = ({
                   {errors.points && <p className="text-sm text-destructive mt-1">{errors.points}</p>}
                 </div>
 
+                <div>
+                  <Label className="mb-3 block">{t("applyToChildren")}</Label>
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    {children.map((child) => (
+                      <Button
+                        key={child.id}
+                        variant={taskChildrenSelection.has(child.id) ? "default" : "outline"}
+                        className={`h-12 flex flex-col gap-1 ${
+                          taskChildrenSelection.has(child.id) ? "bg-success text-white" : ""
+                        }`}
+                        onClick={() => {
+                          const newSelection = new Set(taskChildrenSelection);
+                          if (newSelection.has(child.id)) {
+                            newSelection.delete(child.id);
+                          } else {
+                            newSelection.add(child.id);
+                          }
+                          setTaskChildrenSelection(newSelection);
+                        }}
+                      >
+                        <span className="text-xl">{child.avatar}</span>
+                        <span className="text-xs font-semibold flex items-center gap-1">
+                          {child.name}
+                          {taskChildrenSelection.has(child.id) && <span>✓</span>}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
                 <Button
                   onClick={handleAddTask}
                   className="w-full h-14 text-lg font-bold bg-success text-white hover:bg-success/90"
@@ -512,6 +575,36 @@ const ParentMode = ({
                     className="h-12 text-lg"
                   />
                   {rewardErrors.cost && <p className="text-sm text-destructive mt-1">{rewardErrors.cost}</p>}
+                </div>
+
+                <div>
+                  <Label className="mb-3 block">{t("applyToChildren")}</Label>
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    {children.map((child) => (
+                      <Button
+                        key={child.id}
+                        variant={rewardChildrenSelection.has(child.id) ? "default" : "outline"}
+                        className={`h-12 flex flex-col gap-1 ${
+                          rewardChildrenSelection.has(child.id) ? "bg-success text-white" : ""
+                        }`}
+                        onClick={() => {
+                          const newSelection = new Set(rewardChildrenSelection);
+                          if (newSelection.has(child.id)) {
+                            newSelection.delete(child.id);
+                          } else {
+                            newSelection.add(child.id);
+                          }
+                          setRewardChildrenSelection(newSelection);
+                        }}
+                      >
+                        <span className="text-xl">{child.avatar}</span>
+                        <span className="text-xs font-semibold flex items-center gap-1">
+                          {child.name}
+                          {rewardChildrenSelection.has(child.id) && <span>✓</span>}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
                 </div>
 
                 <Button

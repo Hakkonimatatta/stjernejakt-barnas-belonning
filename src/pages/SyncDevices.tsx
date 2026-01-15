@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Smartphone, RefreshCw, Wifi, Users, QrCode, Camera, Mail } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Html5Qrcode } from "html5-qrcode";
@@ -32,15 +33,20 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
   };
 
   const handleShareViaEmail = () => {
-    // Create a deep-link URL with encoded data
-    const encodedData = encodeURIComponent(dataString);
-    const deepLink = `${window.location.origin}?syncData=${encodedData}`;
-    
+    // Send data as text in email body (more reliable than URL encoding)
     const subject = encodeURIComponent(t("shareDataSubject"));
-    const emailBody = `${t("shareDataBody")}\n\n${deepLink}`;
+    const emailBody = `${t("shareDataBody")}\n\n${dataString}`;
     const body = encodeURIComponent(emailBody);
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-    toast.success(t("openingEmailApp"));
+    
+    try {
+      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+      toast.success(t("openingEmailApp"));
+    } catch (err) {
+      console.error("Email failed:", err);
+      // Fallback: Copy to clipboard
+      navigator.clipboard.writeText(`${t("shareDataSubject")}\n\n${dataString}`);
+      toast.success("Data kopiert til clipboard - lim inn i e-posten");
+    }
   };
 
   const handleImportText = () => {
@@ -278,6 +284,31 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
               {t("scanToSync")}
             </p>
           </div>
+        </Card>
+
+        {/* Import data card */}
+        <Card className="p-6 bg-card border-4 border-primary/20 shadow-xl">
+          <h2 className="text-xl font-bold text-card-foreground mb-4">
+            📥 {t("importData")}
+          </h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            {t("importDataDescription")}
+          </p>
+          
+          <Textarea
+            value={importText}
+            onChange={(e) => setImportText(e.target.value)}
+            placeholder={t("pasteDataHere")}
+            className="font-mono text-xs h-32 mb-4"
+          />
+          
+          <Button
+            onClick={handleImportText}
+            disabled={!importText.trim()}
+            className="w-full h-12"
+          >
+            {t("importButton")}
+          </Button>
         </Card>
 
         {/* Warning card */}
