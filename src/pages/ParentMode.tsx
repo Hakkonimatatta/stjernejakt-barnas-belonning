@@ -426,17 +426,17 @@ const ParentMode = ({
               <div className="mt-6 space-y-2 max-h-64 overflow-y-auto">
                 <h3 className="font-semibold text-muted-foreground">{t("existingTasks")}:</h3>
                 {selectedChild.tasks.map((task) => (
-                  <div key={task.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <div className="flex items-center gap-3">
+                  <div key={task.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-muted rounded-lg">
+                    <div className="flex items-center gap-3 min-w-0">
                       <span className="text-2xl">{task.icon}</span>
-                      <div>
-                        <p className="font-semibold text-card-foreground">{task.name}</p>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-card-foreground break-words">{task.name}</p>
                         <p className="text-sm text-muted-foreground">
                           {task.points} {t("points")} {task.completed && t("completed")}
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 w-full sm:w-auto justify-end sm:justify-start">
                       {task.completed && (
                         <Button
                           variant="outline"
@@ -520,17 +520,17 @@ const ParentMode = ({
               <div className="mt-6 space-y-2 max-h-64 overflow-y-auto">
                 <h3 className="font-semibold text-muted-foreground">{t("existingRewards")}:</h3>
                 {selectedChild.rewards.map((reward) => (
-                  <div key={reward.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <div className="flex items-center gap-3">
+                  <div key={reward.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-muted rounded-lg">
+                    <div className="flex items-center gap-3 min-w-0">
                       <span className="text-2xl">{reward.icon}</span>
-                      <div>
-                        <p className="font-semibold text-card-foreground">{reward.name}</p>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-card-foreground break-words">{reward.name}</p>
                         <p className="text-sm text-muted-foreground">
                           {reward.cost} {t("points")} {reward.purchased && t("completed")}
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 w-full sm:w-auto justify-end sm:justify-start">
                       {reward.purchased && (
                         <Button
                           variant="outline"
@@ -606,21 +606,23 @@ const ParentMode = ({
           
           <div className="space-y-3 max-h-64 overflow-y-auto">
             {children.map((child) => (
-              <div key={child.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <div className="flex items-center gap-3">
+              <div key={child.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-muted rounded-lg">
+                <div className="flex items-center gap-3 min-w-0">
                   <span className="text-3xl">{child.avatar}</span>
-                  <div>
-                    <p className="font-semibold text-card-foreground">{child.name}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-card-foreground break-words">{child.name}</p>
                     <p className="text-sm text-muted-foreground">{child.points} {t("points")}</p>
                   </div>
                 </div>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDeleteChild(child.id)}
-                >
-                  {t("delete")}
-                </Button>
+                <div className="flex w-full sm:w-auto justify-end sm:justify-start">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDeleteChild(child.id)}
+                  >
+                    {t("delete")}
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
