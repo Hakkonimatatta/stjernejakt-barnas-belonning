@@ -13,6 +13,9 @@ html, body {
   overflow-x: hidden;
   -webkit-user-zoom: 1;
   user-zoom: 1;
+  /* Prevent Android/WebView text autosizing that inflates fonts */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* Disable iOS Safari button focus delay/styling */

@@ -55,7 +55,7 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language }: ShopProps)
             return (
               <Card 
                 key={reward.id} 
-                className={`p-5 bg-card border-4 shadow-lg transition-all ${
+                className={`p-3 sm:p-5 bg-card border-2 sm:border-4 shadow-lg transition-all ${
                   reward.purchased
                     ? "border-success opacity-75"
                     : canAfford

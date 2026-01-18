@@ -60,7 +60,7 @@ const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6">
       <div className="max-w-md mx-auto space-y-6">
-        <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Button variant="outline" onClick={() => navigate("/")} className="text-sm sm:text-base h-10 sm:h-auto px-2 sm:px-4">
             {t("back")}
           </Button>
@@ -79,14 +79,14 @@ const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
           {tasks.map((task) => (
             <Card 
               key={task.id} 
-              className={`p-3 sm:p-5 bg-card border-4 shadow-lg transition-all ${
+              className={`p-2 sm:p-5 bg-card border-2 sm:border-4 shadow-lg transition-all ${
                 task.completed 
                   ? "border-success opacity-75" 
                   : "border-border hover:shadow-xl"
               }`}
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-                <div className="text-4xl sm:text-5xl flex-shrink-0">{task.icon}</div>
+                <div className="text-3xl sm:text-5xl flex-shrink-0">{task.icon}</div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg sm:text-xl font-bold text-card-foreground mb-1 break-words">
                     {task.name}
