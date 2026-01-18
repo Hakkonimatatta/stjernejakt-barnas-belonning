@@ -119,14 +119,14 @@ const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
                   : "border-border hover:shadow-xl"
               }`}
             >
-              <div className="flex items-center gap-4">
-                <div className="text-5xl">{task.icon}</div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-card-foreground mb-1">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="text-4xl sm:text-5xl">{task.icon}</div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg sm:text-xl font-bold text-card-foreground mb-1 truncate">
                     {task.name}
                   </h3>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-star">{task.points}</span>
+                    <span className="text-xl sm:text-2xl font-bold text-star">{task.points}</span>
                     <span className="text-sm text-muted-foreground">{t("points")}</span>
                   </div>
                 </div>
