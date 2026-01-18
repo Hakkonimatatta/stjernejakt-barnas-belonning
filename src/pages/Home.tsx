@@ -74,7 +74,7 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
   const handleSelect = (childId: string) => {
     playWelcomeSound();
     onSelectChild(childId);
-    navigate("/tasks");
+    navigate("/tasks", { state: { childId } });
   };
 
   const handleAddChild = () => {
