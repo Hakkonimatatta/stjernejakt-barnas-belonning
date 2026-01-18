@@ -37,12 +37,12 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language }: ShopProps)
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6">
       <div className="max-w-md mx-auto space-y-6">
-        <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Button variant="outline" onClick={() => navigate("/tasks")} className="text-sm sm:text-base h-10 sm:h-auto px-2 sm:px-4">
             {t("back")}
           </Button>
           <h1 className="text-2xl sm:text-4xl font-bold text-primary text-center">{t("shop")}</h1>
-          <div className="flex items-center justify-end gap-2 bg-card px-3 py-2 sm:px-4 sm:py-2 rounded-full border-4 border-border">
+          <div className="flex items-center justify-center sm:justify-end gap-2 bg-card px-3 py-2 sm:px-4 sm:py-2 rounded-full border-2 sm:border-4 border-border">
             <span className="text-xl sm:text-2xl">⭐</span>
             <span className="text-lg sm:text-xl font-bold text-star">{currentPoints}</span>
           </div>
