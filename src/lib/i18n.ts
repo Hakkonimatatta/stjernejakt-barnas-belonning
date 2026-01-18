@@ -48,6 +48,8 @@ export const translations = {
     done: "Ferdig!",
     completed: "✅",
     taskCompleted: "Bra jobba! Du fikk {points} poeng! ⭐",
+    welcomeTitle: "Velkommen til Stjernejobb!",
+    welcomeMessage: "Her er noen standard oppgaver. Inne på foreldremodus kan du legge til egne oppgaver og belønninger :)",
     
     // Shop
     myPoints: "Se mine poeng",
@@ -214,6 +216,8 @@ export const translations = {
     done: "Done!",
     completed: "✅",
     taskCompleted: "Great job! You earned {points} points! ⭐",
+    welcomeTitle: "Welcome to Stjernejobb!",
+    welcomeMessage: "Here are some standard tasks. In parent mode you can add your own tasks and rewards :)",
     
     // Shop
     myPoints: "See my points",

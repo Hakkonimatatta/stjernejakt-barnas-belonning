@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Task } from "@/types";
 import { toast } from "sonner";
 import { initializeAudioContext, playSuccessSequence } from "@/lib/audioManager";
@@ -16,9 +17,25 @@ interface TasksProps {
 const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
   const cleanupTimeout = useRef<number>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const t = (key: Parameters<typeof translate>[1], params?: Parameters<typeof translate>[2]) => 
     translate(language, key, params);
+
+  // Check if this is the first visit for this child
+  useEffect(() => {
+    const childId = location.state?.childId;
+    if (childId) {
+      const welcomeKey = `stjernejakt_welcome_seen_${childId}`;
+      const hasSeenWelcome = localStorage.getItem(welcomeKey);
+      
+      if (!hasSeenWelcome) {
+        setShowWelcome(true);
+        localStorage.setItem(welcomeKey, "true");
+      }
+    }
+  }, [location.state?.childId]);
 
   useEffect(() => {
     const timeoutId = cleanupTimeout.current;
@@ -59,6 +76,23 @@ const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6">
+      <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{t("welcomeTitle")}</DialogTitle>
+            <DialogDescription className="text-base pt-4">
+              {t("welcomeMessage")}
+            </DialogDescription>
+          </DialogHeader>
+          <Button 
+            onClick={() => setShowWelcome(false)}
+            className="w-full mt-4"
+          >
+            {t("ok")}
+          </Button>
+        </DialogContent>
+      </Dialog>
+
       <div className="max-w-md mx-auto space-y-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Button variant="outline" onClick={() => navigate("/")} className="text-sm sm:text-base h-10 sm:h-auto px-2 sm:px-4">
