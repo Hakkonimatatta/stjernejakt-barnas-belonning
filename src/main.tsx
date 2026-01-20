@@ -3,12 +3,20 @@ import App from "./App.tsx";
 import "./index.css";
 
 // Debug for Android WebView
-console.log("App starting...", { 
+console.log("🚀 App starting...", { 
   userAgent: navigator.userAgent,
-  viewport: { width: window.innerWidth, height: window.innerHeight }
+  viewport: { width: window.innerWidth, height: window.innerHeight },
+  rootElement: document.getElementById("root")
 });
 
-createRoot(document.getElementById("root")!).render(<App />);
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  console.log("✅ Root element found, creating React app...");
+  createRoot(rootElement).render(<App />);
+  console.log("✅ React app mounted!");
+} else {
+  console.error("❌ Root element NOT found!");
+}
 
 // Register service worker for PWA support
 if ("serviceWorker" in navigator) {

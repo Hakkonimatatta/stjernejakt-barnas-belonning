@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:android": "BUILD_TARGET=android npm run build && npx cap sync android",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
