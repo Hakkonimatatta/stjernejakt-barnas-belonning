@@ -48,9 +48,13 @@ const ParentMode = ({
 }: ParentModeProps) => {
   const navigate = useNavigate();
   
-  // Handle back button - always return to Parent Mode (avoid navigate(-1) history blanks)
+  // Back logic: if a child is selected, just deselect to stay in Parent Mode; otherwise leave to home
   const handleBack = () => {
-    navigate("/parent");
+    if (selectedChildId) {
+      setSelectedChildId(null);
+      return;
+    }
+    navigate("/");
   };
   
   const [pin, setPin] = useState("");
