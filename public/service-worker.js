@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stjernejobb-v3';
+const CACHE_NAME = 'stjernejobb-v4';
 const urlsToCache = [
   '/',
   '/index.html',
