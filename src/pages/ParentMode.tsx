@@ -117,7 +117,6 @@ const ParentMode = ({
   const handleUnlock = () => {
     if (pin === currentPin) {
       setUnlocked(true);
-      toast.success(t("welcomeParent"));
     } else {
       toast.error(t("wrongPin"));
       setPin("");
@@ -299,7 +298,7 @@ const ParentMode = ({
               
               <Button 
                 variant="outline"
-                onClick={() => navigate("/")}
+                onClick={() => navigate(-1)}
                 className="w-full h-12 text-lg"
               >
                 {t("cancel")}
@@ -322,7 +321,7 @@ const ParentMode = ({
       <div className="max-w-md mx-auto space-y-6">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <h1 className="text-2xl sm:text-3xl font-bold text-primary">{t("parentMode")}</h1>
-          <Button variant="outline" onClick={() => navigate("/")} className="text-sm">
+          <Button variant="outline" onClick={() => navigate(-1)} className="text-sm">
             {t("back")}
           </Button>
         </div>
