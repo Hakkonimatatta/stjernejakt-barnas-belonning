@@ -102,10 +102,10 @@ const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
           <Button 
             variant="outline" 
             onClick={() => navigate("/shop")}
-            className="h-10 sm:h-auto px-2 sm:px-6 text-sm sm:text-xl font-bold"
+            className="h-10 sm:h-auto px-3 sm:px-6 text-sm sm:text-xl font-bold"
           >
             <span className="text-xl sm:text-3xl">🛒</span>
-            <span className="hidden sm:inline ml-2">{t("shop")}</span>
+            <span className="ml-2">{t("shop")}</span>
           </Button>
         </div>
 
