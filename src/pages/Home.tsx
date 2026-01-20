@@ -119,7 +119,7 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
         backgroundRepeat: 'no-repeat',
       }}
     >
-      <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
+      <div className="absolute inset-0 bg-background/80" />
       <div className="max-w-md w-full space-y-8 relative z-10">
         <div className="text-center space-y-2">
           <h1 className="font-bold text-primary">
