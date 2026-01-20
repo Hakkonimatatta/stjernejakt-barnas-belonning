@@ -48,9 +48,9 @@ const ParentMode = ({
 }: ParentModeProps) => {
   const navigate = useNavigate();
   
-  // Handle back button - just go to home (navigate(-1) causes blank screen)
+  // Handle back button - always return to Parent Mode (avoid navigate(-1) history blanks)
   const handleBack = () => {
-    navigate("/");
+    navigate("/parent");
   };
   
   const [pin, setPin] = useState("");
