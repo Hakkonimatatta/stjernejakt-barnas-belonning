@@ -345,6 +345,7 @@ const App = () => {
                 onPurchaseReward={handlePurchaseReward}
                 language={language}
                 requirePinForPurchase={appData.settings?.requirePinForPurchase || false}
+                parentPin={appData.settings?.parentPin || "1234"}
               />
             }
           />

@@ -15,9 +15,10 @@ interface ShopProps {
   onPurchaseReward: (rewardId: string) => void;
   language: Language;
   requirePinForPurchase?: boolean;
+  parentPin?: string;
 }
 
-const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinForPurchase }: ShopProps) => {
+const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinForPurchase, parentPin = "1234" }: ShopProps) => {
   const navigate = useNavigate();
   const [pinDialogOpen, setPinDialogOpen] = useState(false);
   const [pin, setPin] = useState("");
@@ -27,8 +28,7 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
     translate(language, key, params);
 
   const handlePinSubmit = (rewardId: string) => {
-    if (pin === "1234" || pin === "") {
-      // Default PIN is 1234, empty means disabled
+    if (pin === parentPin) {
       onPurchaseReward(rewardId);
       fireConfetti();
       toast.success(t("congratulations", { name: rewards.find(r => r.id === rewardId)?.name || "Reward" }), {
