@@ -275,6 +275,16 @@ const App = () => {
     }));
   };
 
+  const handleTogglePinForPurchase = (require: boolean) => {
+    setAppData((prevData) => ({
+      ...prevData,
+      settings: {
+        ...prevData.settings,
+        requirePinForPurchase: require,
+      },
+    }));
+  };
+
   const handleResetAllData = () => {
     try {
       localStorage.removeItem("stjernejakt_data");
@@ -334,6 +344,7 @@ const App = () => {
                 currentPoints={selectedChild?.points || 0}
                 onPurchaseReward={handlePurchaseReward}
                 language={language}
+                requirePinForPurchase={appData.settings?.requirePinForPurchase || false}
               />
             }
           />
@@ -354,6 +365,8 @@ const App = () => {
                 children={appData.children}
                 currentPin={appData.settings?.parentPin || "1234"}
                 onUpdatePin={handleUpdatePin}
+                onTogglePinForPurchase={handleTogglePinForPurchase}
+                requirePinForPurchase={appData.settings?.requirePinForPurchase || false}
                 onResetAllData={handleResetAllData}
                 language={language}
                 onChangeLanguage={setLanguage}

@@ -39,5 +39,6 @@ export interface AppData {
   children: Child[];
   settings?: {
     parentPin: string;
+    requirePinForPurchase?: boolean;
   };
 }

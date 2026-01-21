@@ -1,22 +1,47 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Reward } from "@/types";
 import { toast } from "sonner";
 import { Language, translate } from "@/lib/i18n";
+import { fireConfetti } from "@/lib/confetti";
 
 interface ShopProps {
   rewards: Reward[];
   currentPoints: number;
   onPurchaseReward: (rewardId: string) => void;
   language: Language;
+  requirePinForPurchase?: boolean;
 }
 
-const Shop = ({ rewards, currentPoints, onPurchaseReward, language }: ShopProps) => {
+const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinForPurchase }: ShopProps) => {
   const navigate = useNavigate();
+  const [pinDialogOpen, setPinDialogOpen] = useState(false);
+  const [pin, setPin] = useState("");
+  const [pendingRewardId, setPendingRewardId] = useState<string | null>(null);
 
   const t = (key: Parameters<typeof translate>[1], params?: Parameters<typeof translate>[2]) => 
     translate(language, key, params);
+
+  const handlePinSubmit = (rewardId: string) => {
+    if (pin === "1234" || pin === "") {
+      // Default PIN is 1234, empty means disabled
+      onPurchaseReward(rewardId);
+      fireConfetti();
+      toast.success(t("congratulations", { name: rewards.find(r => r.id === rewardId)?.name || "Reward" }), {
+        duration: 3000,
+      });
+      setPinDialogOpen(false);
+      setPin("");
+      setPendingRewardId(null);
+    } else {
+      toast.error(t("wrongPin"));
+      setPin("");
+    }
+  };
 
   const handlePurchase = (reward: Reward) => {
     if (reward.purchased) {
@@ -25,10 +50,16 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language }: ShopProps)
     }
     
     if (currentPoints >= reward.cost) {
-      onPurchaseReward(reward.id);
-      toast.success(t("congratulations", { name: reward.name }), {
-        duration: 3000,
-      });
+      if (requirePinForPurchase) {
+        setPendingRewardId(reward.id);
+        setPinDialogOpen(true);
+      } else {
+        onPurchaseReward(reward.id);
+        fireConfetti();
+        toast.success(t("congratulations", { name: reward.name }), {
+          duration: 3000,
+        });
+      }
     } else {
       toast.error(t("needMorePoints", { points: reward.cost - currentPoints }));
     }
@@ -103,6 +134,49 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language }: ShopProps)
           {t("myPoints")}
         </Button>
       </div>
+
+      {pinDialogOpen && pendingRewardId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="max-w-sm w-full p-6 bg-card border-4 border-border shadow-lg">
+            <div className="space-y-4">
+              <h2 className="text-2xl font-bold text-card-foreground text-center">{t("enterPin")}</h2>
+              <div>
+                <Label htmlFor="purchasePin">{t("pinCode")}</Label>
+                <Input
+                  id="purchasePin"
+                  type="password"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && pendingRewardId && handlePinSubmit(pendingRewardId)}
+                  placeholder="****"
+                  maxLength={4}
+                  className="text-2xl text-center h-14 mt-2"
+                  autoFocus
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setPinDialogOpen(false);
+                    setPin("");
+                    setPendingRewardId(null);
+                  }}
+                  className="flex-1"
+                >
+                  {t("cancel")}
+                </Button>
+                <Button
+                  onClick={() => pendingRewardId && handlePinSubmit(pendingRewardId)}
+                  className="flex-1"
+                >
+                  {t("unlock")}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

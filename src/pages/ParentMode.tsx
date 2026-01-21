@@ -25,6 +25,9 @@ interface ParentModeProps {
   children: Child[];
   currentPin: string;
   onUpdatePin: (newPin: string) => void;
+  onTogglePinForPurchase: (require: boolean) => void;
+  requirePinForPurchase: boolean;
+  onResetAllData: () => void;
   language: Language;
   onChangeLanguage: (language: Language) => void;
 }
@@ -43,6 +46,9 @@ const ParentMode = ({
   children, 
   currentPin, 
   onUpdatePin,
+  onTogglePinForPurchase,
+  requirePinForPurchase,
+  onResetAllData,
   language,
   onChangeLanguage,
 }: ParentModeProps) => {
@@ -634,6 +640,26 @@ const ParentMode = ({
                 </div>
               </div>
             ))}
+          </div>
+        </Card>
+
+        <Card className="p-6 bg-card border-4 border-border shadow-lg">
+          <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("purchaseSettings")}</h2>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>{t("requirePinForPurchase")}</Label>
+                <p className="text-sm text-muted-foreground">{t("pinRequiredForShop")}</p>
+              </div>
+              <Button
+                variant={requirePinForPurchase ? "default" : "outline"}
+                onClick={() => onTogglePinForPurchase(!requirePinForPurchase)}
+                className="w-24"
+              >
+                {requirePinForPurchase ? t("on") : t("off")}
+              </Button>
+            </div>
           </div>
         </Card>
 

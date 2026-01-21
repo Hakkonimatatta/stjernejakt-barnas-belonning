@@ -117,6 +117,11 @@ export const translations = {
     pointsForChild: "Poeng for {name}",
     activityLog: "Aktivitetslogg for {name}",
     existingRewards: "Eksisterende belønninger",
+    purchaseSettings: "Kjøpsinnstillinger",
+    requirePinForPurchase: "Krev PIN ved kjøp",
+    pinRequiredForShop: "Barn må oppgi PIN for å kjøpe i butikken",
+    on: "PÅ",
+    off: "AV",
     
     // Toasts
     childAdded: "{name} er lagt til! 🎉",
@@ -284,8 +289,13 @@ export const translations = {
     tasksForChild: "Tasks for {name}",
     rewardsForChild: "Rewards for {name}",
     pointsForChild: "Points for {name}",
-    activityLog: "Activity Log for {name}",
+    activityLog: "Activity log for {name}",
     existingRewards: "Existing rewards",
+    purchaseSettings: "Purchase settings",
+    requirePinForPurchase: "Require PIN for purchase",
+    pinRequiredForShop: "Children must enter PIN to buy in the shop",
+    on: "ON",
+    off: "OFF",
     
     // Toasts
     childAdded: "{name} has been added! 🎉",
