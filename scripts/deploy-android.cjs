@@ -9,14 +9,17 @@
 const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
+const os = require("os");
 
 const ANDROID_DIR = path.join(__dirname, "..", "android");
 const BUILD_DIR = path.join(ANDROID_DIR, "build");
 const GRADLE_DIR = path.join(ANDROID_DIR, ".gradle");
 const APK_PATH = path.join(ANDROID_DIR, "app", "build", "outputs", "apk", "debug", "app-debug.apk");
-const ADB_PATH = process.env.ANDROID_HOME 
-  ? path.join(process.env.ANDROID_HOME, "platform-tools", "adb")
-  : "adb";
+const ADB_PATH = path.join(
+  process.env.ANDROID_HOME || path.join(os.homedir(), "AppData", "Local", "Android", "Sdk"),
+  "platform-tools",
+  "adb"
+);
 
 function log(msg) {
   console.log(`\n🚀 ${msg}`);
@@ -52,26 +55,41 @@ try {
 
   // 4. Gradle clean
   log("Cleaning Gradle...");
-  execSync("./gradlew clean", {
+  execSync(path.join(ANDROID_DIR, "gradlew") + " clean", {
     cwd: ANDROID_DIR,
     stdio: "inherit",
+    shell: true,
   });
 
   // 5. Build APK
   log("Building APK...");
-  execSync("./gradlew assembleDebug -q", {
+  execSync(path.join(ANDROID_DIR, "gradlew") + " assembleDebug -q", {
     cwd: ANDROID_DIR,
     stdio: "inherit",
+    shell: true,
   });
 
-  // 6. Install
+  // 6. Uninstall old app (fixes hash mismatch issues)
+  log("Cleaning old app installation...");
+  try {
+    execSync(`"${ADB_PATH}" uninstall no.haako.stjernejakt`, {
+      stdio: "ignore",
+      shell: true,
+    });
+    // Wait for uninstall to complete
+    execSync("timeout /t 1 /nobreak", { stdio: "ignore", shell: true });
+  } catch (error) {
+    // App might not be installed, that's fine
+  }
+
+  // 7. Install
   log("Installing APK...");
   execSync(`"${ADB_PATH}" install -r "${APK_PATH}"`, {
     stdio: "inherit",
     shell: true,
   });
 
-  // 7. Launch
+  // 8. Launch
   log("Launching app...");
   execSync(`"${ADB_PATH}" shell am start -n no.haako.stjernejakt/no.haako.stjernejakt.MainActivity`, {
     stdio: "inherit",

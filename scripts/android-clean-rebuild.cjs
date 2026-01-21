@@ -34,16 +34,18 @@ try {
 
   // Run gradlew clean
   log("Running Gradle clean...");
-  execSync("./gradlew clean", {
+  execSync(path.join(ANDROID_DIR, "gradlew") + " clean", {
     cwd: ANDROID_DIR,
     stdio: "inherit",
+    shell: true,
   });
 
   // Build APK
   log("Building APK...");
-  execSync("./gradlew assembleDebug -q", {
+  execSync(path.join(ANDROID_DIR, "gradlew") + " assembleDebug -q", {
     cwd: ANDROID_DIR,
     stdio: "inherit",
+    shell: true,
   });
 
   log("✅ Android rebuild complete!");
