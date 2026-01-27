@@ -172,12 +172,12 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
 
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Card className="p-6 bg-card/50 border-4 border-dashed border-border hover:bg-card hover:shadow-lg transition-all cursor-pointer">
-                <div className="flex flex-col items-center justify-center gap-3 py-4">
-                  <Button variant="ghost" size="icon" className="text-4xl pointer-events-none" disabled>
+              <Card className="p-2 bg-card/50 border-2 border-dashed border-border hover:bg-card hover:shadow-lg transition-all cursor-pointer w-fit mx-auto">
+                <div className="flex items-center gap-2 px-2 py-1">
+                  <Button variant="ghost" size="icon" className="text-2xl pointer-events-none" disabled>
                     ➕
                   </Button>
-                  <p className="text-xl font-bold text-muted-foreground">{t("addChild")}</p>
+                  <span className="text-base font-medium text-muted-foreground">{t("addChild")}</span>
                 </div>
               </Card>
             </DialogTrigger>
