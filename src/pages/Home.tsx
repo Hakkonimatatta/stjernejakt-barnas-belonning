@@ -161,9 +161,9 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
               </div>
               <Button 
                 onClick={() => handleSelect(child.id)}
-                variant="primary"
+                variant="secondary"
                 size="lg"
-                className="w-full mt-4 text-2xl font-bold"
+                className="w-full mt-4 text-2xl font-bold bg-yellow-400 hover:bg-yellow-500 text-gray-900 border-none shadow-sm"
               >
                 {t("begin")}
               </Button>
