@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,23 +23,38 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
   const [pinDialogOpen, setPinDialogOpen] = useState(false);
   const [pin, setPin] = useState("");
   const [pendingRewardId, setPendingRewardId] = useState<string | null>(null);
+  const [pointsPop, setPointsPop] = useState(false);
+  const [pinError, setPinError] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmedRewardName, setConfirmedRewardName] = useState<string>("");
 
   const t = (key: Parameters<typeof translate>[1], params?: Parameters<typeof translate>[2]) => 
     translate(language, key, params);
+
+  useEffect(() => {
+    setPointsPop(true);
+    const timer = window.setTimeout(() => setPointsPop(false), 500);
+    return () => window.clearTimeout(timer);
+  }, [currentPoints]);
 
   const handlePinSubmit = (rewardId: string) => {
     if (pin === parentPin) {
       onPurchaseReward(rewardId);
       fireConfetti();
+      setConfirmOpen(true);
+      setConfirmedRewardName(rewards.find(r => r.id === rewardId)?.name || "Reward");
       toast.success(t("congratulations", { name: rewards.find(r => r.id === rewardId)?.name || "Reward" }), {
         duration: 3000,
       });
       setPinDialogOpen(false);
       setPin("");
       setPendingRewardId(null);
+      setPinError(false);
     } else {
       toast.error(t("wrongPin"));
+      setPinError(true);
       setPin("");
+      window.setTimeout(() => setPinError(false), 400);
     }
   };
 
@@ -56,6 +71,8 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
       } else {
         onPurchaseReward(reward.id);
         fireConfetti();
+        setConfirmOpen(true);
+        setConfirmedRewardName(reward.name);
         toast.success(t("congratulations", { name: reward.name }), {
           duration: 3000,
         });
@@ -75,7 +92,9 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
           <h1 className="text-2xl sm:text-4xl font-bold text-primary text-center">{t("shop")}</h1>
           <div className="flex items-center justify-center sm:justify-end gap-2 bg-card px-3 py-2 sm:px-4 sm:py-2 rounded-full border-2 sm:border-4 border-border">
             <span className="text-xl sm:text-2xl">⭐</span>
-            <span className="text-lg sm:text-xl font-bold text-star">{currentPoints}</span>
+            <span className={`text-lg sm:text-xl font-bold text-star ${pointsPop ? "animate-pop" : ""}`}>
+              {currentPoints}
+            </span>
           </div>
         </div>
 
@@ -150,7 +169,7 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
                   onKeyPress={(e) => e.key === "Enter" && pendingRewardId && handlePinSubmit(pendingRewardId)}
                   placeholder="****"
                   maxLength={4}
-                  className="text-2xl text-center h-14 mt-2"
+                  className={`text-2xl text-center h-14 mt-2 ${pinError ? "border-destructive animate-shake" : ""}`}
                   autoFocus
                 />
               </div>
@@ -174,6 +193,19 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
                 </Button>
               </div>
             </div>
+          </Card>
+        </div>
+      )}
+
+      {confirmOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+          <Card className="max-w-sm w-full p-6 bg-card border-4 border-border shadow-2xl animate-pop text-center">
+            <div className="text-5xl mb-3">🎉</div>
+            <h3 className="text-2xl font-bold text-card-foreground mb-2">{t("congratulations", { name: confirmedRewardName })}</h3>
+            <p className="text-muted-foreground mb-4">{t("rewardAdded")}</p>
+            <Button className="w-full" onClick={() => setConfirmOpen(false)}>
+              {t("ok")}
+            </Button>
           </Card>
         </div>
       )}

@@ -28,6 +28,15 @@ function ensureInstance() {
   return confettiInstance;
 }
 
+// Pre-warm confetti instance to avoid lag on first use
+export function preInitConfetti() {
+  if (typeof window !== "undefined" && document.readyState === "complete") {
+    ensureInstance();
+  } else if (typeof window !== "undefined") {
+    window.addEventListener("load", () => ensureInstance());
+  }
+}
+
 function cleanup() {
   try {
     confettiInstance?.reset();
@@ -41,13 +50,14 @@ function cleanup() {
 
 export function fireConfetti(opts?: Options) {
   const instance = ensureInstance();
+  const isAndroid = isAndroidWebView();
   const defaults: Options = {
-    particleCount: 80,
-    spread: 60,
+    particleCount: isAndroid ? 100 : 120, // More particles for better visual effect
+    spread: isAndroid ? 70 : 60, // Wider spread on Android
     origin: { y: 0.6 },
     disableForReducedMotion: false,
-    ticks: 200,
-    startVelocity: 35,
+    ticks: isAndroid ? 120 : 200, // Faster animation on Android
+    startVelocity: isAndroid ? 30 : 35, // Slightly slower velocity on Android
     scalar: 0.9,
   };
 

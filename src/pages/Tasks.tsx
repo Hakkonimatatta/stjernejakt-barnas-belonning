@@ -19,6 +19,7 @@ const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showWelcome, setShowWelcome] = useState(false);
+  const [recentlyCompletedId, setRecentlyCompletedId] = useState<string | null>(null);
 
   const t = (key: Parameters<typeof translate>[1], params?: Parameters<typeof translate>[2]) => 
     translate(language, key, params);
@@ -66,6 +67,8 @@ const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
   const handleComplete = (task: Task) => {
     if (!task.completed) {
       onCompleteTask(task.id);
+      setRecentlyCompletedId(task.id);
+      window.setTimeout(() => setRecentlyCompletedId(null), 650);
       playSuccessSound();
       void triggerConfetti();
       toast.success(t("taskCompleted", { points: task.points }), {
@@ -117,7 +120,7 @@ const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
                 task.completed 
                   ? "border-success opacity-75" 
                   : "border-border hover:shadow-xl"
-              }`}
+              } ${recentlyCompletedId === task.id ? "animate-card-done" : ""}`}
             >
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="text-4xl sm:text-5xl">{task.icon}</div>

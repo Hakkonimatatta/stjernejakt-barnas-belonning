@@ -26,6 +26,30 @@
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="manifest" href="/manifest.json" />
+    <script>
+      // Simple runtime error overlay for Android WebView
+      (function () {
+        const showError = (msg) => {
+          const el = document.createElement('div');
+          el.style.position = 'fixed';
+          el.style.inset = '0';
+          el.style.background = 'rgba(0,0,0,0.7)';
+          el.style.color = '#fff';
+          el.style.zIndex = '99999';
+          el.style.padding = '24px';
+          el.style.fontFamily = 'monospace';
+          el.innerText = msg;
+          document.body.appendChild(el);
+        };
+
+        window.addEventListener('error', (e) => {
+          showError('JS error: ' + e.message + '\n' + (e.filename || '') + ':' + (e.lineno || ''));
+        });
+        window.addEventListener('unhandledrejection', (e) => {
+          showError('Promise rejection: ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
+        });
+      })();
+    </script>
     <script type="text/javascript">
       // Handle redirects from 404.html
       (function(){
@@ -39,7 +63,12 @@
   </head>
 
   <body style="background-color: hsl(200, 45%, 88%) !important; margin: 0; padding: 0;">
-    <div id="root" style="background-color: hsl(200, 45%, 88%) !important; min-height: 100vh; width: 100%;"></div>
+    <div id="root" style="background-color: hsl(200, 45%, 88%) !important; min-height: 100vh; width: 100%;">
+      <div style="padding: 20px; text-align: center; color: #333; font-family: Arial, sans-serif;">
+        <h1 style="font-size: 24px; margin-top: 100px;">⏳ Laster Stjernejobb...</h1>
+        <p style="font-size: 16px; margin-top: 20px;">Hvis denne meldingen ikke forsvinner, er det et problem med å laste appen.</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

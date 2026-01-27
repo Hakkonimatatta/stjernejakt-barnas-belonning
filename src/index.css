@@ -115,6 +115,40 @@ All colors MUST be HSL.
   }
 }
 
+/* Simple micro-animations */
+@keyframes pop-scale {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.2); }
+  60% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+@keyframes card-done {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+  50% { transform: scale(1.02); box-shadow: 0 10px 30px -10px rgba(34,197,94,0.6); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34,197,94,0.0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.animate-pop {
+  animation: pop-scale 450ms ease;
+}
+
+.animate-card-done {
+  animation: card-done 600ms ease;
+}
+
+.animate-shake {
+  animation: shake 320ms ease;
+}
+
 @layer base {
   * {
     @apply border-border;

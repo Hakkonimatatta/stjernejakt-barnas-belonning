@@ -27,7 +27,9 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
   const [childName, setChildName] = useState("");
   const [childAvatar, setChildAvatar] = useState("");
   const [errors, setErrors] = useState<{ name?: string; avatar?: string }>({});
+  const [pointsPopId, setPointsPopId] = useState<string | null>(null);
   const { playWelcomeSound } = useWelcomeSound();
+  const lastPointsRef = useState<Record<string, number>>({})[0];
 
   const t = (key: Parameters<typeof translate>[1], params?: Parameters<typeof translate>[2]) => 
     translate(language, key, params);
@@ -42,6 +44,17 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
       setWelcomeOpen(true);
     }
   }, [children.length]);
+
+  useEffect(() => {
+    children.forEach((child) => {
+      const prev = lastPointsRef[child.id];
+      if (prev !== undefined && prev !== child.points) {
+        setPointsPopId(child.id);
+        window.setTimeout(() => setPointsPopId((id) => (id === child.id ? null : id)), 500);
+      }
+      lastPointsRef[child.id] = child.points;
+    });
+  }, [children, lastPointsRef]);
 
   const avatars = [
     // Boys with skin tones
@@ -137,18 +150,20 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
             <Card key={child.id} className="p-6 bg-card border-4 border-border shadow-lg">
               <div className="flex items-center gap-6">
                 <div className="text-7xl">{child.avatar}</div>
-                <div className="flex-1">
-                  <h2 className="text-3xl font-bold text-card-foreground mb-2">{child.name}</h2>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-3xl font-bold text-card-foreground mb-2 truncate">{child.name}</h2>
                   <div className="flex items-center gap-2">
                     <span className="text-4xl">⭐</span>
-                    <span className="text-2xl font-bold text-star">{child.points}</span>
+                    <span className={`text-2xl font-bold text-star ${pointsPopId === child.id ? "animate-pop" : ""}`}>{child.points}</span>
                     <span className="text-lg text-muted-foreground">{t("points")}</span>
                   </div>
                 </div>
               </div>
               <Button 
                 onClick={() => handleSelect(child.id)}
-                className="w-full mt-4 h-16 text-2xl font-bold bg-accent text-accent-foreground hover:bg-accent/90"
+                variant="primary"
+                size="lg"
+                className="w-full mt-4 text-2xl font-bold"
               >
                 {t("begin")}
               </Button>
@@ -159,7 +174,9 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
             <DialogTrigger asChild>
               <Card className="p-6 bg-card/50 border-4 border-dashed border-border hover:bg-card hover:shadow-lg transition-all cursor-pointer">
                 <div className="flex flex-col items-center justify-center gap-3 py-4">
-                  <div className="text-6xl">➕</div>
+                  <Button variant="ghost" size="icon" className="text-4xl pointer-events-none" disabled>
+                    ➕
+                  </Button>
                   <p className="text-xl font-bold text-muted-foreground">{t("addChild")}</p>
                 </div>
               </Card>
@@ -203,7 +220,9 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
 
               <Button
                 onClick={handleAddChild}
-                className="w-full h-14 text-lg font-bold bg-success text-white hover:bg-success/90 flex-shrink-0"
+                variant="primary"
+                size="lg"
+                className="w-full font-bold"
               >
                 {t("add")}
               </Button>
@@ -212,9 +231,10 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
         </div>
 
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() => navigate("/parent")}
-          className="w-full h-12 text-lg"
+          size="default"
+          className="w-full text-lg font-semibold"
         >
           {t("parentMode")}
         </Button>
@@ -222,18 +242,20 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
         <div className="flex gap-3">
           <Button
             onClick={() => onChangeLanguage("no")}
-            variant={language === "no" ? "default" : "outline"}
+            variant={language === "no" ? "primary" : "ghost"}
+            size="default"
             className="flex-1 h-12 text-lg font-bold"
           >
-            {t("norwegian")}
-          </Button>
-          <Button
-            onClick={() => onChangeLanguage("en")}
-            variant={language === "en" ? "default" : "outline"}
-            className="flex-1 h-12 text-lg font-bold"
-          >
-            {t("english")}
-          </Button>
+              {t("norwegian")}
+            </Button>
+            <Button
+              onClick={() => onChangeLanguage("en")}
+              variant={language === "en" ? "primary" : "ghost"}
+              size="default"
+              className="flex-1 h-12 text-lg font-bold"
+            >
+              {t("english")}
+            </Button>
         </div>
       </div>
 
@@ -248,10 +270,12 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
           </DialogHeader>
           <Button
             onClick={() => setWelcomeOpen(false)}
-            className="w-full h-12 text-lg mt-4"
+            variant="primary"
+            size="default"
+            className="w-full text-lg mt-4 font-bold"
           >
-            {t("ok")}
-          </Button>
+              {t("ok")}
+            </Button>
         </DialogContent>
       </Dialog>
     </div>

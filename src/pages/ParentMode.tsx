@@ -77,6 +77,7 @@ const ParentMode = ({
   const [newPin, setNewPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [pinError, setPinError] = useState("");
+  const [pinShake, setPinShake] = useState(false);
   const [pointsToDeduct, setPointsToDeduct] = useState<Record<string, string>>({});
 
   const t = (key: Parameters<typeof translate>[1], params?: Parameters<typeof translate>[2]) =>
@@ -133,8 +134,11 @@ const ParentMode = ({
   const handleUnlock = () => {
     if (pin === currentPin) {
       setUnlocked(true);
+      setPinShake(false);
     } else {
       toast.error(t("wrongPin"));
+      setPinShake(true);
+      window.setTimeout(() => setPinShake(false), 350);
       setPin("");
     }
   };
@@ -147,6 +151,16 @@ const ParentMode = ({
 
   const handleAddTask = () => {
     if (!selectedChildId) return;
+    
+    // Sjekk om barnet allerede har 3 oppgaver
+    const child = children.find(c => c.id === selectedChildId);
+    if (child && child.tasks.length >= 3) {
+      toast.info(t("trialPhaseLimit"), {
+        duration: 5000,
+      });
+      return;
+    }
+    
     try {
       setErrors({});
       
@@ -196,6 +210,16 @@ const ParentMode = ({
 
   const handleAddReward = () => {
     if (!selectedChildId) return;
+    
+    // Sjekk om barnet allerede har 3 belønninger
+    const child = children.find(c => c.id === selectedChildId);
+    if (child && child.rewards.length >= 3) {
+      toast.info(t("trialPhaseLimit"), {
+        duration: 5000,
+      });
+      return;
+    }
+    
     try {
       setRewardErrors({});
       
@@ -301,7 +325,7 @@ const ParentMode = ({
                   onKeyPress={(e) => e.key === "Enter" && handleUnlock()}
                   placeholder="****"
                   maxLength={4}
-                  className="text-2xl text-center h-14"
+                  className={`text-2xl text-center h-14 ${pinShake ? "border-destructive animate-shake" : ""}`}
                 />
               </div>
               

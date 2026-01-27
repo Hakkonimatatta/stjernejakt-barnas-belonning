@@ -8,14 +8,12 @@ export const getDefaultTasks = (language: Language = loadLanguage()): Task[] =>
     ? [
         { id: "1", name: "Clean your room", icon: "🧹", points: 5, completed: false },
         { id: "2", name: "Brush your teeth", icon: "🪥", points: 2, completed: false },
-        { id: "3", name: "Walk the dog", icon: "🐕", points: 10, completed: false },
-        { id: "4", name: "Play outside", icon: "⚽", points: 3, completed: false },
+        { id: "3", name: "Play outside", icon: "⚽", points: 3, completed: false },
       ]
     : [
         { id: "1", name: "Rydd rommet", icon: "🧹", points: 5, completed: false },
         { id: "2", name: "Puss tennene", icon: "🪥", points: 2, completed: false },
-        { id: "3", name: "Gå tur med hunden", icon: "🐕", points: 10, completed: false },
-        { id: "4", name: "Lek ute", icon: "⚽", points: 3, completed: false },
+        { id: "3", name: "Lek ute", icon: "⚽", points: 3, completed: false },
       ];
 
 export const getDefaultRewards = (language: Language = loadLanguage()): Reward[] =>
@@ -103,7 +101,6 @@ export const saveData = (data: AppData): void => {
 const taskTranslationMap: Record<string, { no: string; en: string }> = {
   "🧹": { no: "Rydd rommet", en: "Clean your room" },
   "🪥": { no: "Puss tennene", en: "Brush your teeth" },
-  "🐕": { no: "Gå tur med hunden", en: "Walk the dog" },
   "⚽": { no: "Lek ute", en: "Play outside" },
 };
 
