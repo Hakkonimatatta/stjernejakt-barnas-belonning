@@ -115,38 +115,128 @@ All colors MUST be HSL.
   }
 }
 
-/* Simple micro-animations */
+/* Modern animations and interactions */
 @keyframes pop-scale {
   0% { transform: scale(1); }
-  30% { transform: scale(1.2); }
-  60% { transform: scale(0.95); }
+  30% { transform: scale(1.15); }
+  60% { transform: scale(0.97); }
   100% { transform: scale(1); }
 }
 
 @keyframes card-done {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
-  50% { transform: scale(1.02); box-shadow: 0 10px 30px -10px rgba(34,197,94,0.6); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34,197,94,0.0); }
+  0% { 
+    transform: scale(1) translateY(0); 
+    box-shadow: 0 0 0 0 rgba(34,197,94,0.4);
+    border-color: hsl(var(--border));
+  }
+  50% { 
+    transform: scale(1.03) translateY(-4px); 
+    box-shadow: 0 20px 40px -10px rgba(34,197,94,0.5);
+    border-color: hsl(var(--success-green));
+  }
+  100% { 
+    transform: scale(1) translateY(0); 
+    box-shadow: 0 0 0 0 rgba(34,197,94,0.0);
+    border-color: hsl(var(--success-green));
+  }
 }
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-6px); }
-  40% { transform: translateX(6px); }
-  60% { transform: translateX(-4px); }
-  80% { transform: translateX(4px); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+
+@keyframes slide-up {
+  from { 
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+  50% { box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.3); }
 }
 
 .animate-pop {
-  animation: pop-scale 450ms ease;
+  animation: pop-scale 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .animate-card-done {
-  animation: card-done 600ms ease;
+  animation: card-done 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .animate-shake {
-  animation: shake 320ms ease;
+  animation: shake 400ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+.animate-slide-up {
+  animation: slide-up 300ms ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 200ms ease-out;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 1s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Glass morphism effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-effect-dark {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Smooth transitions */
+* {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button, .card, .interactive {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* Touch-friendly targets */
+@media (hover: none) and (pointer: coarse) {
+  button, a, input, select, textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
 @layer base {

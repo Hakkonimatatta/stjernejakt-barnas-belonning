@@ -15,6 +15,7 @@ export interface Child {
   tasks: Task[];
   rewards: Reward[];
   activities?: Activity[]; // Activity log
+  bonusLastAwardedAt?: number; // Timestamp for 24h bonus tracking
 }
 
 export interface Task {
@@ -40,5 +41,6 @@ export interface AppData {
   settings?: {
     parentPin: string;
     requirePinForPurchase?: boolean;
+    enable24hReset?: boolean;
   };
 }

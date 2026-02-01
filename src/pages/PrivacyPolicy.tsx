@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function PrivacyPolicy() {
@@ -7,19 +8,18 @@ export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-blue-50 p-4">
       <div className="max-w-2xl mx-auto py-8">
-        <Button
-          variant="ghost"
-          className="mb-6"
-          onClick={() => navigate(-1)}
-        >
-          ← Tilbake
-        </Button>
-
-        <h1 className="text-3xl font-bold text-purple-700 mb-8">
-          Personvern og Datapolicy
-        </h1>
-
-        <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
+        <div className="flex items-center gap-2 mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            aria-label="Tilbake"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+          <span className="text-lg font-bold">Tilbake</span>
+        </div>
+        <div>
           <section>
             <h2 className="text-xl font-bold text-blue-600 mb-3">
               Om Stjernejobb

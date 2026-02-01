@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { ChevronLeft } from "lucide-react";
+import { BottomNav } from "@/components/ui/bottom-nav";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Task } from "@/types";
+import { Activity, Task } from "@/types";
 import { toast } from "sonner";
 import { initializeAudioContext, playSuccessSequence } from "@/lib/audioManager";
 import { Language, translate } from "@/lib/i18n";
@@ -11,15 +14,38 @@ import { Language, translate } from "@/lib/i18n";
 interface TasksProps {
   tasks: Task[];
   onCompleteTask: (taskId: string) => void;
+  currentPoints: number;
+  enable24hReset: boolean;
+  activities: Activity[];
   language: Language;
 }
 
-const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
+const Tasks = ({ tasks, onCompleteTask, currentPoints, enable24hReset, activities, language }: TasksProps) => {
+  const BONUS_TASK_TARGET = 3;
+  const BONUS_WINDOW_MS = 24 * 60 * 60 * 1000;
   const cleanupTimeout = useRef<number>();
   const navigate = useNavigate();
   const location = useLocation();
   const [showWelcome, setShowWelcome] = useState(false);
   const [recentlyCompletedId, setRecentlyCompletedId] = useState<string | null>(null);
+  const [progressValue, setProgressValue] = useState(0);
+  const [milestone, setMilestone] = useState<number | null>(null);
+
+  // Beregn progress og milepæl for 24t bonus
+  useEffect(() => {
+    const now = Date.now();
+    const completedRecent = activities.filter(
+      (a) => a.type === "task" && now - a.timestamp <= BONUS_WINDOW_MS
+    ).length;
+    const percent = Math.min(100, Math.round((completedRecent / BONUS_TASK_TARGET) * 100));
+    setProgressValue(percent);
+
+    // Sjekk for milepæl når 3 oppgaver er fullført innen 24t
+    if (completedRecent >= BONUS_TASK_TARGET) {
+      setMilestone(completedRecent);
+      setTimeout(() => setMilestone(null), 2000);
+    }
+  }, [activities]);
 
   const t = (key: Parameters<typeof translate>[1], params?: Parameters<typeof translate>[2]) => 
     translate(language, key, params);
@@ -65,7 +91,8 @@ const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
   };
 
   const handleComplete = (task: Task) => {
-    if (!task.completed) {
+    const canComplete = enable24hReset ? !task.completed : true;
+    if (canComplete) {
       onCompleteTask(task.id);
       setRecentlyCompletedId(task.id);
       window.setTimeout(() => setRecentlyCompletedId(null), 650);
@@ -78,7 +105,37 @@ const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6">
+    <div className="min-h-screen flex flex-col bg-background p-0 sm:p-0">
+      {/* Sticky toppbar */}
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-lg flex items-center gap-3 sm:gap-4 px-3 sm:px-4 py-3 border-b-2 border-border/30 shadow-soft">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/")}
+            aria-label={t("back")}
+            className="hover:bg-primary/10"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+          <div className="flex items-center gap-1 bg-card/80 backdrop-blur-sm px-2.5 py-1.5 rounded-full border-2 border-border/30 shadow-sm flex-shrink-0">
+            <span className="text-lg">⭐</span>
+            <span className="text-base font-bold text-star min-w-6 text-center">{currentPoints}</span>
+          </div>
+        </div>
+        <span className="text-3xl sm:text-4xl font-bold text-primary flex-1 text-center">{t("tasks")}</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/shop")}
+          className="text-base sm:text-lg font-semibold flex items-center gap-1 flex-shrink-0"
+          aria-label={t("shop")}
+        >
+          <span className="text-xl sm:text-2xl">🛒</span>
+          {t("shop")}
+        </Button>
+      </div>
+
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -96,63 +153,89 @@ const Tasks = ({ tasks, onCompleteTask, language }: TasksProps) => {
         </DialogContent>
       </Dialog>
 
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <Button variant="outline" onClick={() => navigate("/")} className="text-sm sm:text-base h-10 sm:h-auto px-2 sm:px-4">
-            {t("back")}
-          </Button>
-          <h1 className="text-2xl sm:text-4xl font-bold text-primary text-center">{t("tasks")}</h1>
-          <Button 
-            variant="outline" 
-            onClick={() => navigate("/shop")}
-            className="h-12 sm:h-auto px-3 sm:px-6 text-base sm:text-xl font-bold flex items-center gap-2"
-          >
-            <span className="text-2xl">🛒</span>
-            <span>{t("shop")}</span>
-          </Button>
+      <div className="max-w-md mx-auto space-y-4 px-3 sm:px-0 py-3 sm:py-6 pb-28">
+        <div className="space-y-4">
+          {tasks.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
+              <div className="text-6xl mb-4 animate-bounce-subtle">✨</div>
+              <div className="text-xl font-semibold mb-2">{t("noTasksYet")}</div>
+              <div className="text-muted-foreground mb-2">{t("addNewTask")}</div>
+            </div>
+          ) : (
+            tasks.map((task, index) => {
+              const isCompleted = enable24hReset ? task.completed : false;
+              return (
+              <Card 
+                key={task.id} 
+                className={`p-2 sm:p-5 bg-gradient-to-br from-card to-card/80 border-2 transition-all duration-300 animate-slide-up ${
+                  isCompleted 
+                    ? "border-success/50 opacity-80 bg-success/5" 
+                    : "border-border hover:border-primary/30 hover:shadow-xl hover:scale-[1.02]"
+                } ${recentlyCompletedId === task.id ? "animate-card-done" : ""}`}
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <div className={`text-4xl sm:text-6xl transition-all duration-300 ${!isCompleted ? "hover:scale-110" : "grayscale"}`}>{task.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`text-lg sm:text-2xl font-bold mb-1 truncate ${isCompleted ? "line-through text-muted-foreground" : "text-card-foreground"}`}>
+                      {task.name}
+                    </h3>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xl sm:text-3xl font-bold text-star">+{task.points}</span>
+                      <span className="text-xs sm:text-base text-muted-foreground">{t("points")}</span>
+                    </div>
+                  </div>
+                  {isCompleted ? (
+                    <div className="text-3xl sm:text-4xl animate-pop">✅</div>
+                  ) : (
+                    <Button
+                      onClick={() => handleComplete(task)}
+                      className="h-12 sm:h-14 px-4 sm:px-6 text-base sm:text-lg font-bold bg-success text-white hover:bg-success/90"
+                    >
+                      ✓ {t("done")}
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            );
+            })
+          )}
         </div>
 
-        <div className="space-y-4">
-          {tasks.map((task) => (
-            <Card 
-              key={task.id} 
-              className={`p-3 sm:p-5 bg-card border-2 sm:border-4 shadow-lg transition-all ${
-                task.completed 
-                  ? "border-success opacity-75" 
-                  : "border-border hover:shadow-xl"
-              } ${recentlyCompletedId === task.id ? "animate-card-done" : ""}`}
-            >
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="text-4xl sm:text-5xl">{task.icon}</div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg sm:text-xl font-bold text-card-foreground mb-1 truncate">
-                    {task.name}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl sm:text-2xl font-bold text-star">{task.points}</span>
-                    <span className="text-sm text-muted-foreground">{t("points")}</span>
-                  </div>
-                </div>
-                {task.completed ? (
-                  <div className="text-4xl">{t("completed")}</div>
-                ) : (
-                  <Button
-                    onClick={() => handleComplete(task)}
-                    className="h-14 px-6 text-lg font-bold bg-success text-white hover:bg-success/90"
-                  >
-                    {t("done")}
-                  </Button>
-                )}
+        {/* Progress bar for oppgaver - flyttet til bunnen */}
+        {tasks.length > 0 && (
+          <div className="mt-8 mb-4">
+            <div className="text-sm font-semibold text-primary mb-2">
+              {t("bonusTaskMessage")}
+            </div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-medium text-muted-foreground">
+                {t("tasks")}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {Math.min(BONUS_TASK_TARGET, activities.filter((a) => a.type === "task" && Date.now() - a.timestamp <= BONUS_WINDOW_MS).length)}/{BONUS_TASK_TARGET} {t("done")}
+              </span>
+            </div>
+            <Progress value={progressValue} />
+            {milestone && (
+              <div className="flex items-center justify-center mt-2 animate-bounce text-2xl">
+                {milestone === 5 && "🌟"}
+                {milestone === 10 && "🏅"}
+                {milestone === 15 && "🎉"}
+                {milestone === 20 && "🚀"}
+                <span className="ml-2 font-bold text-success">{milestone} {t("done")}</span>
               </div>
-            </Card>
-          ))}
-        </div>
+            )}
+          </div>
+        )}
       </div>
+      <BottomNav />
     </div>
   );
 };
 
 export default Tasks;
+
 
 
 

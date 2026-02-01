@@ -121,6 +121,8 @@ export const translations = {
     trialPhaseLimit: "Takk for at du bruker Stjernejobb! Vi er i prøvefasen og vil senere legge til en premium versjon der du kan ha evig med oppgaver, belønninger og andre morsomme ting. For nå er det maks 3 oppgaver og 3 belønninger per barn.",
     requirePinForPurchase: "Krev PIN ved kjøp",
     pinRequiredForShop: "Barn må oppgi PIN for å kjøpe i butikken",
+    enable24hReset: "24t reset for oppgaver/belønninger",
+    enable24hResetDescription: "Slå av for å kunne gjøre oppgaver/belønninger på nytt med en gang",
     on: "PÅ",
     off: "AV",
     
@@ -135,6 +137,16 @@ export const translations = {
     rewardDeleted: "Belønning slettet",
     rewardReset: "Belønning tilbakestilt!",
     childRemoved: "Barn fjernet",
+    bonusTaskMessage: "Fullfør 3 oppgaver innen 24t og få 5 poeng ekstra!",
+    confirmDeleteTitle: "Slett {name}?",
+    confirmDeleteDescription: "Er du sikker på at du vil slette dette barnet? Alle oppgaver og belønninger vil også bli slettet.",
+    confirmDeleteTask: "Slett oppgave?",
+    confirmDeleteTaskDescription: "Er du sikker på at du vil slette denne oppgaven? Dette kan ikke angres.",
+    confirmDeleteReward: "Slett belønning?",
+    confirmDeleteRewardDescription: "Er du sikker på at du vil slette denne belønningen? Dette kan ikke angres.",
+    manageChild: "Administrer {name}",
+    deleteChild: "Slett barn",
+    deleteChildWarning: "Dette fjerner barnet og alle oppgaver/belønninger.",
     mustHaveOneChild: "Du må ha minst ett barn!",
     allTasksReset: "Alle oppgaver er tilbakestilt!",
     allRewardsReset: "Alle belønninger er tilbakestilt!",
@@ -295,6 +307,8 @@ export const translations = {
     purchaseSettings: "Purchase settings",
     requirePinForPurchase: "Require PIN for purchase",
     pinRequiredForShop: "Children must enter PIN to buy in the shop",
+    enable24hReset: "24h reset for tasks/rewards",
+    enable24hResetDescription: "Turn off to redo tasks/rewards immediately",
     on: "ON",
     off: "OFF",
     
@@ -310,6 +324,16 @@ export const translations = {
     rewardReset: "Reward reset!",
     trialPhaseLimit: "Thank you for using Stjernejobb! We are in the trial phase and will later add a premium version where you can have unlimited tasks, rewards and other fun things. For now, there is a maximum of 3 tasks and 3 rewards per child.",
     childRemoved: "Child removed",
+    bonusTaskMessage: "Complete 3 tasks within 24h and get 5 bonus points!",
+    confirmDeleteTitle: "Delete {name}?",
+    confirmDeleteDescription: "Are you sure you want to delete this child? All tasks and rewards will also be deleted.",
+    confirmDeleteTask: "Delete task?",
+    confirmDeleteTaskDescription: "Are you sure you want to delete this task? This cannot be undone.",
+    confirmDeleteReward: "Delete reward?",
+    confirmDeleteRewardDescription: "Are you sure you want to delete this reward? This cannot be undone.",
+    manageChild: "Manage {name}",
+    deleteChild: "Delete child",
+    deleteChildWarning: "This removes the child and all tasks/rewards.",
     mustHaveOneChild: "You must have at least one child!",
     allTasksReset: "All tasks have been reset!",
     allRewardsReset: "All rewards have been reset!",
@@ -379,13 +403,15 @@ export const translate = (
   key: keyof typeof translations.no,
   params?: Record<string, string | number>
 ): string => {
-  let text: string = translations[lang][key];
-  
+  let text: string | undefined = translations[lang][key];
+  if (typeof text !== "string") {
+    // Fallback: return nøkkelnavn hvis ikke funnet
+    return key as string;
+  }
   if (params) {
     Object.entries(params).forEach(([param, value]) => {
       text = text.replace(`{${param}}`, String(value));
     });
   }
-  
   return text;
 };

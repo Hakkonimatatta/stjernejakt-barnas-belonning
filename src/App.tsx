@@ -16,6 +16,9 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
+  const BONUS_TASK_TARGET = 3;
+  const BONUS_WINDOW_MS = 24 * 60 * 60 * 1000;
+  const BONUS_POINTS = 5;
   const initialLanguage = loadLanguage();
   const [language, setLanguage] = useState<Language>(initialLanguage);
   const [appData, setAppData] = useState<AppData>(() => {
@@ -77,31 +80,43 @@ const App = () => {
       
       const task = child.tasks.find((t) => t.id === taskId);
       if (!task || task.completed) return prevData;
+      const now = Date.now();
 
       return {
         ...prevData,
-        children: prevData.children.map((c) =>
-          c.id === selectedChildId
-            ? {
-                ...c,
-                points: c.points + task.points,
-                tasks: c.tasks.map((t) =>
-                  t.id === taskId ? { ...t, completed: true, completedAt: Date.now() } : t
-                ),
-                activities: [
-                  ...(c.activities || []),
-                  {
-                    id: `activity_${Date.now()}`,
-                    type: "task" as const,
-                    name: task.name,
-                    icon: task.icon,
-                    points: task.points,
-                    timestamp: Date.now(),
-                  },
-                ],
-              }
-            : c
-        ),
+        children: prevData.children.map((c) => {
+          if (c.id !== selectedChildId) return c;
+
+          const activities = [
+            ...(c.activities || []),
+            {
+              id: `activity_${now}`,
+              type: "task" as const,
+              name: task.name,
+              icon: task.icon,
+              points: task.points,
+              timestamp: now,
+            },
+          ];
+
+          const recentTaskCount = activities.filter(
+            (a) => a.type === "task" && now - a.timestamp <= BONUS_WINDOW_MS
+          ).length;
+          const canAwardBonus =
+            recentTaskCount >= BONUS_TASK_TARGET &&
+            (!c.bonusLastAwardedAt || now - c.bonusLastAwardedAt > BONUS_WINDOW_MS);
+          const bonusPoints = canAwardBonus ? BONUS_POINTS : 0;
+
+          return {
+            ...c,
+            points: c.points + task.points + bonusPoints,
+            tasks: c.tasks.map((t) =>
+              t.id === taskId ? { ...t, completed: true, completedAt: now } : t
+            ),
+            activities,
+            bonusLastAwardedAt: canAwardBonus ? now : c.bonusLastAwardedAt,
+          };
+        }),
       };
     });
   };
@@ -285,6 +300,16 @@ const App = () => {
     }));
   };
 
+  const handleToggle24hReset = (enable: boolean) => {
+    setAppData((prevData) => ({
+      ...prevData,
+      settings: {
+        ...prevData.settings,
+        enable24hReset: enable,
+      },
+    }));
+  };
+
   const handleResetAllData = () => {
     try {
       localStorage.removeItem("stjernejakt_data");
@@ -332,6 +357,9 @@ const App = () => {
               <Tasks 
                 tasks={selectedChild?.tasks || []} 
                 onCompleteTask={handleCompleteTask} 
+                currentPoints={selectedChild?.points || 0}
+                enable24hReset={appData.settings?.enable24hReset !== false}
+                activities={selectedChild?.activities || []}
                 language={language}
               />
             }
@@ -368,9 +396,10 @@ const App = () => {
                 onUpdatePin={handleUpdatePin}
                 onTogglePinForPurchase={handleTogglePinForPurchase}
                 requirePinForPurchase={appData.settings?.requirePinForPurchase || false}
+                enable24hReset={appData.settings?.enable24hReset !== false}
+                onToggle24hReset={handleToggle24hReset}
                 onResetAllData={handleResetAllData}
                 language={language}
-                onChangeLanguage={setLanguage}
               />
             }
           />

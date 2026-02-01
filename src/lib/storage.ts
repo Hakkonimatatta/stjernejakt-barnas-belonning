@@ -33,6 +33,7 @@ const defaultData: AppData = {
   children: [],
   settings: {
     parentPin: "1234",
+    enable24hReset: true,
   },
 };
 

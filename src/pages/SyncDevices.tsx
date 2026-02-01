@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Smartphone, RefreshCw, Wifi, Users, QrCode, Camera, Mail } from "lucide-react";
+import { ChevronLeft, Smartphone, RefreshCw, Wifi, Users, QrCode, Camera, Mail } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Html5Qrcode } from "html5-qrcode";
 import { toast } from "sonner";
@@ -159,16 +159,22 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
   const dataSizeKB = (dataSize / 1024).toFixed(1);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/20 via-secondary/10 to-background p-4">
-      <div className="max-w-md mx-auto space-y-6 pt-4">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-primary/20 via-secondary/10 to-background p-0 sm:p-0">
+      {/* Sticky toppbar */}
+      <div className="sticky top-0 z-30 bg-background/90 backdrop-blur flex items-center gap-2 px-4 py-3 border-b border-border shadow-sm w-full max-w-md mx-auto">
         <Button
           variant="ghost"
+          size="icon"
           onClick={() => navigate(-1)}
-          className="hover:bg-white/50"
+          aria-label={t("back")}
+          className="mr-2"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("back")}
+          <ChevronLeft className="h-6 w-6" />
         </Button>
+        <span className="text-lg font-bold flex-1 text-center">{t("syncAcrossDevices")}</span>
+      </div>
+
+      <div className="max-w-md mx-auto space-y-6 pt-4 px-2 sm:px-0">
 
         <Card className="p-8 bg-card border-4 border-primary/20 shadow-xl text-center overflow-hidden relative">
           {/* Decorative background elements */}

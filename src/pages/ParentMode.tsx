@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
+import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Task, Reward, Child } from "@/types";
@@ -27,9 +29,10 @@ interface ParentModeProps {
   onUpdatePin: (newPin: string) => void;
   onTogglePinForPurchase: (require: boolean) => void;
   requirePinForPurchase: boolean;
+  enable24hReset: boolean;
+  onToggle24hReset: (enable: boolean) => void;
   onResetAllData: () => void;
   language: Language;
-  onChangeLanguage: (language: Language) => void;
 }
 
 const ParentMode = ({ 
@@ -39,7 +42,7 @@ const ParentMode = ({
   onResetRewards, 
   onAddTask, 
   onDeleteTask, 
-  onDeleteChild, 
+  onDeleteChild,
   onAddReward, 
   onDeleteReward, 
   onAdjustPoints, 
@@ -48,9 +51,10 @@ const ParentMode = ({
   onUpdatePin,
   onTogglePinForPurchase,
   requirePinForPurchase,
+  enable24hReset,
+  onToggle24hReset,
   onResetAllData,
   language,
-  onChangeLanguage,
 }: ParentModeProps) => {
   const navigate = useNavigate();
   
@@ -62,10 +66,16 @@ const ParentMode = ({
     }
     navigate("/");
   };
-  
-  const [pin, setPin] = useState("");
+
   const [unlocked, setUnlocked] = useState(false);
+  const [pin, setPin] = useState("");
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+  const [deleteChildId, setDeleteChildId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
+  const [isDeleteTaskDialogOpen, setIsDeleteTaskDialogOpen] = useState(false);
+  const [deleteRewardId, setDeleteRewardId] = useState<string | null>(null);
+  const [isDeleteRewardDialogOpen, setIsDeleteRewardDialogOpen] = useState(false);
   const [taskName, setTaskName] = useState("");
   const [taskIcon, setTaskIcon] = useState("");
   const [taskPoints, setTaskPoints] = useState("5");
@@ -195,17 +205,16 @@ const ParentMode = ({
   };
 
   const handleDeleteTask = (taskId: string) => {
-    if (!selectedChildId) return;
-    onDeleteTask(selectedChildId, taskId);
-    toast.success(t("taskDeleted"));
+    setDeleteTaskId(taskId);
+    setIsDeleteTaskDialogOpen(true);
   };
 
-  const handleDeleteChild = (childId: string) => {
-    onDeleteChild(childId);
-    if (selectedChildId === childId) {
-      setSelectedChildId(null);
-    }
-    toast.success(t("childRemoved"));
+  const confirmDeleteTask = () => {
+    if (!selectedChildId || !deleteTaskId) return;
+    onDeleteTask(selectedChildId, deleteTaskId);
+    setIsDeleteTaskDialogOpen(false);
+    setDeleteTaskId(null);
+    toast.success(t("taskDeleted"));
   };
 
   const handleAddReward = () => {
@@ -254,8 +263,31 @@ const ParentMode = ({
   };
 
   const handleDeleteReward = (rewardId: string) => {
-    if (!selectedChildId) return;
-    onDeleteReward(selectedChildId, rewardId);
+    setDeleteRewardId(rewardId);
+    setIsDeleteRewardDialogOpen(true);
+  };
+
+  const handleDeleteChild = (childId: string) => {
+    setDeleteChildId(childId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteChild = () => {
+    if (!deleteChildId) return;
+    onDeleteChild(deleteChildId);
+    if (selectedChildId === deleteChildId) {
+      setSelectedChildId(null);
+    }
+    setIsDeleteDialogOpen(false);
+    setDeleteChildId(null);
+    toast.success(t("childRemoved"));
+  };
+
+  const confirmDeleteReward = () => {
+    if (!selectedChildId || !deleteRewardId) return;
+    onDeleteReward(selectedChildId, deleteRewardId);
+    setIsDeleteRewardDialogOpen(false);
+    setDeleteRewardId(null);
     toast.success(t("rewardDeleted"));
   };
 
@@ -310,7 +342,7 @@ const ParentMode = ({
         <Card className="max-w-md w-full p-8 bg-card border-4 border-border shadow-lg">
           <div className="space-y-6">
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-primary mb-2">{t("parentMode")}</h1>
+              <h1 className="text-4xl font-bold text-primary mb-2">{t("parentMode")}</h1>
               <p className="text-muted-foreground">{t("enterPin")}</p>
             </div>
             
@@ -326,6 +358,7 @@ const ParentMode = ({
                   placeholder="****"
                   maxLength={4}
                   className={`text-2xl text-center h-14 ${pinShake ? "border-destructive animate-shake" : ""}`}
+                  autoFocus
                 />
               </div>
               
@@ -357,38 +390,22 @@ const ParentMode = ({
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6">
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary">{t("parentMode")}</h1>
-          <Button variant="outline" onClick={handleBack} className="text-sm">
-            {t("back")}
-          </Button>
-        </div>
+    <div className="min-h-screen bg-background p-0 sm:p-0 flex flex-col">
+      {/* Sticky toppbar */}
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-lg flex items-center justify-center gap-2 px-4 py-3 border-b-2 border-border/30 shadow-soft relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleBack}
+          aria-label={t("back")}
+          className="hover:bg-primary/10 absolute left-2"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </Button>
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary text-center">{t("parentMode")}</h1>
+      </div>
 
-        <div className="flex gap-2 flex-wrap">
-          <Button
-            onClick={() => onChangeLanguage("no")}
-            variant={language === "no" ? "default" : "outline"}
-            className="h-10 text-sm"
-          >
-            {t("norwegian")}
-          </Button>
-          <Button
-            onClick={() => onChangeLanguage("en")}
-            variant={language === "en" ? "default" : "outline"}
-            className="h-10 text-sm"
-          >
-            {t("english")}
-          </Button>
-          <Button
-            onClick={() => navigate("/sync")}
-            className="h-10 flex-1"
-            variant="secondary"
-          >
-            {t("syncDevices")}
-          </Button>
-        </div>
+      <div className="flex-1 max-w-md w-full mx-auto space-y-6 px-2 sm:px-0 py-4 sm:py-6">
 
         {/* Velg barn */}
         <Card className="p-6 bg-card border-4 border-border shadow-lg">
@@ -398,11 +415,12 @@ const ParentMode = ({
               <Button
                 key={child.id}
                 variant={selectedChildId === child.id ? "default" : "outline"}
-                className="h-20 flex flex-col gap-1"
+                className="h-20 flex flex-col gap-1 overflow-hidden"
                 onClick={() => setSelectedChildId(child.id)}
+                title={child.name}
               >
                 <span className="text-3xl">{child.avatar}</span>
-                <span className="text-sm font-semibold">{child.name}</span>
+                <span className="text-sm font-semibold truncate w-full px-1">{child.name}</span>
               </Button>
             ))}
           </div>
@@ -493,7 +511,7 @@ const ParentMode = ({
                         size="sm"
                         onClick={() => handleDeleteTask(task.id)}
                       >
-                        Slett
+                        🗑️ {t("delete")}
                       </Button>
                     </div>
                   </div>
@@ -587,7 +605,7 @@ const ParentMode = ({
                         size="sm"
                         onClick={() => handleDeleteReward(reward.id)}
                       >
-                        Slett
+                        🗑️ {t("delete")}
                       </Button>
                     </div>
                   </div>
@@ -641,35 +659,7 @@ const ParentMode = ({
         )}
 
         <Card className="p-6 bg-card border-4 border-border shadow-lg">
-          <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("manageChildren")}</h2>
-          
-          <div className="space-y-3 max-h-64 overflow-y-auto">
-            {children.map((child) => (
-              <div key={child.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-muted rounded-lg">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-3xl">{child.avatar}</span>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-card-foreground break-words">{child.name}</p>
-                    <p className="text-sm text-muted-foreground">{child.points} {t("points")}</p>
-                  </div>
-                </div>
-                <div className="flex w-full sm:w-auto justify-end sm:justify-start">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteChild(child.id)}
-                  >
-                    {t("delete")}
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="p-6 bg-card border-4 border-border shadow-lg">
           <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("purchaseSettings")}</h2>
-          
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -677,15 +667,53 @@ const ParentMode = ({
                 <p className="text-sm text-muted-foreground">{t("pinRequiredForShop")}</p>
               </div>
               <Button
-                variant={requirePinForPurchase ? "default" : "outline"}
+                variant="default"
                 onClick={() => onTogglePinForPurchase(!requirePinForPurchase)}
-                className="w-24"
+                className={requirePinForPurchase ? "w-32 h-12 min-w-32 text-sm font-semibold whitespace-nowrap inline-flex items-center justify-center bg-success text-white hover:bg-success/90" : "w-32 h-12 min-w-32 text-sm font-semibold whitespace-nowrap inline-flex items-center justify-center bg-destructive text-destructive-foreground hover:bg-destructive/90"}
               >
                 {requirePinForPurchase ? t("on") : t("off")}
               </Button>
             </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>{t("enable24hReset")}</Label>
+                <p className="text-sm text-muted-foreground">{t("enable24hResetDescription")}</p>
+              </div>
+              <Button
+                variant="default"
+                onClick={() => onToggle24hReset(!enable24hReset)}
+                className={enable24hReset ? "w-32 h-12 min-w-32 text-sm font-semibold whitespace-nowrap inline-flex items-center justify-center bg-success text-white hover:bg-success/90" : "w-32 h-12 min-w-32 text-sm font-semibold whitespace-nowrap inline-flex items-center justify-center bg-destructive text-destructive-foreground hover:bg-destructive/90"}
+              >
+                {enable24hReset ? t("on") : t("off")}
+              </Button>
+            </div>
           </div>
         </Card>
+
+        <Card 
+          className="p-6 bg-card border-4 border-border shadow-lg cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => navigate("/sync")}
+        >
+          <div className="flex items-center gap-4">
+            <div className="text-4xl">📱</div>
+            <div>
+              <h2 className="text-xl font-bold text-card-foreground">{t("syncAcrossDevices")}</h2>
+              <p className="text-sm text-muted-foreground">{t("syncTapToOpen")}</p>
+            </div>
+          </div>
+        </Card>
+
+        {selectedChild && (
+          <Card className="p-4 bg-card border-4 border-border shadow-lg">
+            <Button
+              variant="destructive"
+              className="w-full h-12 text-base font-semibold"
+              onClick={() => handleDeleteChild(selectedChild.id)}
+            >
+              🗑️ {t("deleteChild")}
+            </Button>
+          </Card>
+        )}
 
         <Card className="p-6 bg-card border-4 border-border shadow-lg">
           <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("changePin")}</h2>
@@ -725,18 +753,7 @@ const ParentMode = ({
           </div>
         </Card>
 
-        <Card 
-          className="p-6 bg-card border-4 border-border shadow-lg cursor-pointer hover:bg-muted/50 transition-colors"
-          onClick={() => navigate("/sync")}
-        >
-          <div className="flex items-center gap-4">
-            <div className="text-4xl">📱</div>
-            <div>
-              <h2 className="text-xl font-bold text-card-foreground">{t("syncAcrossDevices")}</h2>
-              <p className="text-sm text-muted-foreground">{t("syncTapToOpen")}</p>
-            </div>
-          </div>
-        </Card>
+
 
         <Card className="p-4 bg-muted/50 border-2 border-dashed border-muted-foreground/30">
           <h3 className="font-semibold text-muted-foreground mb-2">💡 {t("tips")}</h3>
@@ -745,6 +762,54 @@ const ParentMode = ({
           </ul>
         </Card>
       </div>
+
+      {/* Bekreftelsesdialog for sletting av oppgave */}
+      <Dialog open={isDeleteTaskDialogOpen} onOpenChange={setIsDeleteTaskDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>⚠️ {t("confirmDeleteTask")}</DialogTitle>
+            <DialogDescription>
+              {t("confirmDeleteTaskDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsDeleteTaskDialogOpen(false)}>{t("cancel")}</Button>
+            <Button variant="destructive" onClick={confirmDeleteTask}>🗑️ {t("delete")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bekreftelsesdialog for sletting av belønning */}
+      <Dialog open={isDeleteRewardDialogOpen} onOpenChange={setIsDeleteRewardDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>⚠️ {t("confirmDeleteReward")}</DialogTitle>
+            <DialogDescription>
+              {t("confirmDeleteRewardDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsDeleteRewardDialogOpen(false)}>{t("cancel")}</Button>
+            <Button variant="destructive" onClick={confirmDeleteReward}>🗑️ {t("delete")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bekreftelsesdialog for sletting av barn */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("confirmDeleteTitle", { name: children.find(c => c.id === deleteChildId)?.name || "" })}</DialogTitle>
+            <DialogDescription>
+              {t("confirmDeleteDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>{t("cancel")}</Button>
+            <Button variant="destructive" onClick={confirmDeleteChild}>🗑️ {t("delete")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

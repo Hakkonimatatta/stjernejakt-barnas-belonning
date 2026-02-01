@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ChevronLeft, Plus } from "lucide-react";
+import { BottomNav } from "@/components/ui/bottom-nav";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Child } from "@/types";
 import { toast } from "sonner";
 import { z } from "zod";
+import { cn } from "@/lib/utils";
 import homeBackground from "@/assets/home-background.jpg";
 import { useWelcomeSound } from "@/hooks/useWelcomeSound";
 import { Language, translate } from "@/lib/i18n";
@@ -123,8 +126,8 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
   };
 
   return (
-    <div 
-      className="min-h-screen p-6 flex flex-col items-center justify-center relative"
+    <div
+      className="min-h-screen flex flex-col items-center justify-center relative p-0 sm:p-0"
       style={{
         backgroundImage: `url(${homeBackground})`,
         backgroundSize: 'cover',
@@ -133,25 +136,29 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
       }}
     >
       <div className="absolute inset-0 bg-background/80" />
-      <div className="max-w-md w-full space-y-8 relative z-10">
+      <div className="max-w-md w-full space-y-8 relative z-10 px-2 sm:px-0 py-4 sm:py-8">
         <div className="text-center space-y-2">
           <h1 className="font-bold text-primary">
-            <span className="inline-flex items-center justify-center gap-2 text-4xl sm:text-5xl md:text-6xl leading-tight whitespace-nowrap">
+            <span className="inline-flex items-center justify-center gap-2 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight whitespace-nowrap">
               <span aria-hidden>⭐</span>
               <span>{t("appTitle")}</span>
               <span aria-hidden>⭐</span>
             </span>
           </h1>
-          <p className="text-xl text-foreground">{t("whoIsReady")}</p>
+          <p className="text-lg sm:text-xl text-foreground">{t("whoIsReady")}</p>
         </div>
 
-        <div className="space-y-4">
-          {children.map((child) => (
-            <Card key={child.id} className="p-6 bg-card border-4 border-border shadow-lg">
+        <div className="space-y-4 pb-20">
+          {children.map((child, index) => (
+            <Card 
+              key={child.id} 
+              className="p-6 bg-gradient-to-br from-card to-card/80 border-2 hover:border-primary/30 transform hover:scale-[1.02] transition-all duration-300 animate-slide-up"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
               <div className="flex items-center gap-6">
-                <div className="text-7xl">{child.avatar}</div>
+                <div className="text-7xl transform hover:scale-110 transition-transform duration-300">{child.avatar}</div>
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-3xl font-bold text-card-foreground mb-2 truncate">{child.name}</h2>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-card-foreground mb-2 truncate" title={child.name}>{child.name}</h2>
                   <div className="flex items-center gap-2">
                     <span className="text-4xl">⭐</span>
                     <span className={`text-2xl font-bold text-star ${pointsPopId === child.id ? "animate-pop" : ""}`}>{child.points}</span>
@@ -161,25 +168,23 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
               </div>
               <Button 
                 onClick={() => handleSelect(child.id)}
-                variant="secondary"
                 size="lg"
-                className="w-full mt-4 text-2xl font-bold bg-yellow-400 hover:bg-yellow-500 text-gray-900 border-none shadow-sm"
+                className="w-full mt-4 text-xl sm:text-2xl font-bold bg-[#F2C94C] hover:bg-[#E5BC3C] text-[#2B2200]"
               >
-                {t("begin")}
+                {t("begin")} 🚀
               </Button>
             </Card>
           ))}
-
+          {/* Flytende knapp for å legge til barn */}
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Card className="p-2 bg-card/50 border-2 border-dashed border-border hover:bg-card hover:shadow-lg transition-all cursor-pointer w-fit mx-auto">
-                <div className="flex items-center gap-2 px-2 py-1">
-                  <Button variant="ghost" size="icon" className="text-2xl pointer-events-none" disabled>
-                    ➕
-                  </Button>
-                  <span className="text-base font-medium text-muted-foreground">{t("addChild")}</span>
-                </div>
-              </Card>
+              <button
+                className="fixed bottom-20 right-4 z-50 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-full shadow-2xl w-16 h-16 flex items-center justify-center border-4 border-background hover:scale-110 hover:shadow-glow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 animate-bounce-subtle"
+                aria-label={t("addChild")}
+                type="button"
+              >
+                <Plus className="w-8 h-8" />
+              </button>
             </DialogTrigger>
             <DialogContent className="max-w-md flex flex-col max-h-[90vh]">
               <DialogHeader>
@@ -195,10 +200,10 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
                     placeholder={t("namePlaceholder")}
                     className="h-12 text-lg"
                     maxLength={30}
+                    autoFocus
                   />
                   {errors.name && <p className="text-sm text-destructive mt-1">{errors.name}</p>}
                 </div>
-
                 <div>
                   <Label>{t("selectAvatar")}</Label>
                   <div className="grid grid-cols-5 gap-2 max-h-72 overflow-y-auto pr-2">
@@ -217,12 +222,10 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
                   {errors.avatar && <p className="text-sm text-destructive mt-1">{errors.avatar}</p>}
                 </div>
               </div>
-
               <Button
                 onClick={handleAddChild}
-                variant="primary"
                 size="lg"
-                className="w-full font-bold"
+                className="w-full font-bold bg-[#F2C94C] hover:bg-[#E5BC3C] text-[#2B2200]"
               >
                 {t("add")}
               </Button>
@@ -230,33 +233,7 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
           </Dialog>
         </div>
 
-        <Button
-          variant="secondary"
-          onClick={() => navigate("/parent")}
-          size="default"
-          className="w-full text-lg font-semibold"
-        >
-          {t("parentMode")}
-        </Button>
-
-        <div className="flex gap-3">
-          <Button
-            onClick={() => onChangeLanguage("no")}
-            variant={language === "no" ? "primary" : "ghost"}
-            size="default"
-            className="flex-1 h-12 text-lg font-bold"
-          >
-              {t("norwegian")}
-            </Button>
-            <Button
-              onClick={() => onChangeLanguage("en")}
-              variant={language === "en" ? "primary" : "ghost"}
-              size="default"
-              className="flex-1 h-12 text-lg font-bold"
-            >
-              {t("english")}
-            </Button>
-        </div>
+        <div className="h-2" />
       </div>
 
       <Dialog open={welcomeOpen} onOpenChange={setWelcomeOpen}>
@@ -278,6 +255,7 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
             </Button>
         </DialogContent>
       </Dialog>
+      <BottomNav language={language} onChangeLanguage={onChangeLanguage} showLanguageToggle />
     </div>
   );
 };

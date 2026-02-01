@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Reward } from "@/types";
 import { toast } from "sonner";
 import { Language, translate } from "@/lib/i18n";
 import { fireConfetti } from "@/lib/confetti";
+import { BottomNav } from "@/components/ui/bottom-nav";
 
 interface ShopProps {
   rewards: Reward[];
@@ -83,49 +85,56 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6">
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <Button variant="outline" onClick={() => navigate("/tasks")} className="text-sm sm:text-base h-10 sm:h-auto px-2 sm:px-4">
-            {t("back")}
-          </Button>
-          <h1 className="text-2xl sm:text-4xl font-bold text-primary text-center">{t("shop")}</h1>
-          <div className="flex items-center justify-center sm:justify-end gap-2 bg-card px-3 py-2 sm:px-4 sm:py-2 rounded-full border-2 sm:border-4 border-border">
-            <span className="text-xl sm:text-2xl">⭐</span>
-            <span className={`text-lg sm:text-xl font-bold text-star ${pointsPop ? "animate-pop" : ""}`}>
-              {currentPoints}
-            </span>
-          </div>
+    <div className="min-h-screen flex flex-col bg-background p-0 sm:p-0">
+      {/* Sticky toppbar */}
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-lg flex items-center gap-2 px-4 py-3 border-b-2 border-border/30 shadow-soft">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/tasks")}
+          aria-label={t("back")}
+          className="mr-2 hover:bg-primary/10"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </Button>
+        <span className="text-3xl sm:text-4xl font-bold flex-1 text-center text-primary">{t("shop")}</span>
+        <div className="flex items-center justify-center gap-2 bg-card/80 backdrop-blur-sm px-3 py-2 rounded-full border-2 border-border/30 shadow-md">
+          <span className="text-xl">⭐</span>
+          <span className={`text-lg font-bold text-star ${pointsPop ? "animate-pop" : ""}`}>{currentPoints}</span>
         </div>
+      </div>
+
+      <div className="max-w-md mx-auto space-y-6 px-2 sm:px-0 py-4 sm:py-6 pb-28">
 
         <div className="space-y-4">
-          {rewards.map((reward) => {
+          {rewards.map((reward, index) => {
             const canAfford = currentPoints >= reward.cost;
             
             return (
               <Card 
                 key={reward.id} 
-                className={`p-3 sm:p-5 bg-card border-2 sm:border-4 shadow-lg transition-all ${
+                className={`p-3 sm:p-5 bg-gradient-to-br from-card to-card/80 border-2 transition-all duration-300 animate-slide-up ${
                   reward.purchased
-                    ? "border-success opacity-75"
+                    ? "border-success/50 opacity-80 bg-success/5"
                     : canAfford
-                    ? "border-border hover:shadow-xl"
-                    : "border-border opacity-60"
+                    ? "border-border hover:border-accent/50 hover:shadow-xl hover:scale-[1.02]"
+                    : "border-border/50 opacity-60 grayscale"
                 }`}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="flex items-center gap-4">
-                  <div className="text-5xl">{reward.icon}</div>
+                  <div className={`text-5xl sm:text-6xl transition-all duration-300 ${canAfford && !reward.purchased ? "hover:scale-110 animate-float" : ""}`}>{reward.icon}</div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-card-foreground mb-1">
+                    <h3 className={`text-xl sm:text-2xl font-bold mb-1 ${reward.purchased ? "line-through text-muted-foreground" : "text-card-foreground"}`}>
                       {reward.name}
                     </h3>
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl font-bold text-star">{reward.cost}</span>
-                      <span className="text-sm text-muted-foreground">{t("points")}</span>
+                      <span className="text-2xl sm:text-3xl font-bold text-star">{reward.cost}</span>
+                      <span className="text-sm sm:text-base text-muted-foreground">⭐ {t("points")}</span>
                     </div>
                   </div>
                   {reward.purchased ? (
-                    <div className="text-4xl">{t("completed")}</div>
+                    <div className="text-4xl animate-pop">🎉</div>
                   ) : (
                     <Button
                       onClick={() => handlePurchase(reward)}
@@ -133,10 +142,10 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
                       className={`h-14 px-6 text-lg font-bold ${
                         canAfford
                           ? "bg-accent text-accent-foreground hover:bg-accent/90"
-                          : "opacity-50 cursor-not-allowed"
+                          : "opacity-40 cursor-not-allowed"
                       }`}
                     >
-                      {t("buy")}
+                      🛒 {t("buy")}
                     </Button>
                   )}
                 </div>
@@ -145,13 +154,7 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
           })}
         </div>
 
-        <Button
-          onClick={() => navigate("/")}
-          variant="outline"
-          className="w-full h-14 text-lg"
-        >
-          {t("myPoints")}
-        </Button>
+
       </div>
 
       {pinDialogOpen && pendingRewardId && (
@@ -209,6 +212,7 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
           </Card>
         </div>
       )}
+      <BottomNav />
     </div>
   );
 };
