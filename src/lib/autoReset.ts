@@ -1,16 +1,16 @@
 import { AppData } from "@/types";
 
-const RESET_24H_MS = 24 * 60 * 60 * 1000;
+const RESET_10H_MS = 10 * 60 * 60 * 1000;
 
 export const autoResetExpiredItems = (data: AppData): AppData => {
   const now = Date.now();
-  const enable24hReset = data.settings?.enable24hReset !== false;
-  const taskResetTime = enable24hReset ? RESET_24H_MS : 0;
-  const rewardResetTime = enable24hReset ? RESET_24H_MS : 0;
   let hasChanges = false;
 
   const children = data.children.map((child) => {
     let childChanged = false;
+    const enable24hReset = child.enable24hReset !== false;
+    const taskResetTime = enable24hReset ? RESET_10H_MS : 0;
+    const rewardResetTime = enable24hReset ? RESET_10H_MS : 0;
 
     const tasks = child.tasks.map((task) => {
       if (task.completed && task.completedAt) {

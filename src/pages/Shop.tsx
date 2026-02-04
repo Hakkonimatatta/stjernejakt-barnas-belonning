@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Reward } from "@/types";
+import { Child, Reward } from "@/types";
 import { toast } from "sonner";
 import { Language, translate } from "@/lib/i18n";
 import { fireConfetti } from "@/lib/confetti";
@@ -18,9 +18,26 @@ interface ShopProps {
   language: Language;
   requirePinForPurchase?: boolean;
   parentPin?: string;
+  hasSelectedChild?: boolean;
+  enable24hReset?: boolean;
+  children: Child[];
+  onSelectChild: (childId: string) => void;
+  selectedChildAvatar?: string;
 }
 
-const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinForPurchase, parentPin = "1234" }: ShopProps) => {
+const Shop = ({
+  rewards,
+  currentPoints,
+  onPurchaseReward,
+  language,
+  requirePinForPurchase,
+  parentPin = "1234",
+  hasSelectedChild,
+  enable24hReset = true,
+  children,
+  onSelectChild,
+  selectedChildAvatar,
+}: ShopProps) => {
   const navigate = useNavigate();
   const [pinDialogOpen, setPinDialogOpen] = useState(false);
   const [pin, setPin] = useState("");
@@ -61,7 +78,7 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
   };
 
   const handlePurchase = (reward: Reward) => {
-    if (reward.purchased) {
+    if (enable24hReset && reward.purchased) {
       toast.info(t("alreadyPurchased"));
       return;
     }
@@ -98,60 +115,89 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
           <ChevronLeft className="h-6 w-6" />
         </Button>
         <span className="text-3xl sm:text-4xl font-bold flex-1 text-center text-primary">{t("shop")}</span>
-        <div className="flex items-center justify-center gap-2 bg-card/80 backdrop-blur-sm px-3 py-2 rounded-full border-2 border-border/30 shadow-md">
+        <div className="flex items-center gap-2">
+          {selectedChildAvatar && (
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-card/80 border-2 border-border/30 shadow-md">
+              <span className="text-xl">{selectedChildAvatar}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-center gap-2 bg-card/80 backdrop-blur-sm px-3 py-2 rounded-full border-2 border-border/30 shadow-md">
           <span className="text-xl">⭐</span>
           <span className={`text-lg font-bold text-star ${pointsPop ? "animate-pop" : ""}`}>{currentPoints}</span>
+          </div>
         </div>
       </div>
 
       <div className="max-w-md mx-auto space-y-6 px-2 sm:px-0 py-4 sm:py-6 pb-28">
 
         <div className="space-y-4">
-          {rewards.map((reward, index) => {
-            const canAfford = currentPoints >= reward.cost;
-            
-            return (
-              <Card 
-                key={reward.id} 
-                className={`p-3 sm:p-5 bg-gradient-to-br from-card to-card/80 border-2 transition-all duration-300 animate-slide-up ${
-                  reward.purchased
-                    ? "border-success/50 opacity-80 bg-success/5"
-                    : canAfford
-                    ? "border-border hover:border-accent/50 hover:shadow-xl hover:scale-[1.02]"
-                    : "border-border/50 opacity-60 grayscale"
-                }`}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`text-5xl sm:text-6xl transition-all duration-300 ${canAfford && !reward.purchased ? "hover:scale-110 animate-float" : ""}`}>{reward.icon}</div>
-                  <div className="flex-1">
-                    <h3 className={`text-xl sm:text-2xl font-bold mb-1 ${reward.purchased ? "line-through text-muted-foreground" : "text-card-foreground"}`}>
-                      {reward.name}
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl sm:text-3xl font-bold text-star">{reward.cost}</span>
-                      <span className="text-sm sm:text-base text-muted-foreground">⭐ {t("points")}</span>
-                    </div>
-                  </div>
-                  {reward.purchased ? (
-                    <div className="text-4xl animate-pop">🎉</div>
-                  ) : (
-                    <Button
-                      onClick={() => handlePurchase(reward)}
-                      disabled={!canAfford}
-                      className={`h-14 px-6 text-lg font-bold ${
-                        canAfford
-                          ? "bg-accent text-accent-foreground hover:bg-accent/90"
-                          : "opacity-40 cursor-not-allowed"
+          {rewards.length === 0 && !hasSelectedChild ? (
+            <Card className="p-6 bg-card border-2 border-dashed border-border text-center">
+              <div className="text-4xl mb-3">🧒</div>
+              <div className="text-lg font-semibold text-card-foreground mb-2">{t("selectChildToShop")}</div>
+              <p className="text-sm text-muted-foreground mb-4">{t("selectChildToShopHint")}</p>
+              <Button onClick={() => navigate("/")} className="w-full">
+                {t("goToHome")}
+              </Button>
+            </Card>
+          ) : (
+            rewards.map((reward, index) => {
+              const canAfford = currentPoints >= reward.cost;
+              const isLocked = enable24hReset && reward.purchased;
+
+              return (
+                <Card
+                  key={reward.id}
+                  className={`p-3 sm:p-5 bg-gradient-to-br from-card to-card/80 border-2 transition-all duration-300 animate-slide-up ${
+                    isLocked
+                      ? "border-success/50 opacity-80 bg-success/5"
+                      : canAfford
+                      ? "border-border hover:border-accent/50 hover:shadow-xl hover:scale-[1.02]"
+                      : "border-border/50 opacity-60 grayscale"
+                  }`}
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`text-5xl sm:text-6xl transition-all duration-300 ${
+                        canAfford && !reward.purchased ? "hover:scale-110 animate-float" : ""
                       }`}
                     >
-                      🛒 {t("buy")}
-                    </Button>
-                  )}
-                </div>
-              </Card>
-            );
-          })}
+                      {reward.icon}
+                    </div>
+                    <div className="flex-1">
+                      <h3
+                        className={`text-xl sm:text-2xl font-bold mb-1 ${
+                          isLocked ? "line-through text-muted-foreground" : "text-card-foreground"
+                        }`}
+                      >
+                        {reward.name}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl sm:text-3xl font-bold text-star">{reward.cost}</span>
+                        <span className="text-sm sm:text-base text-muted-foreground">⭐ {t("points")}</span>
+                      </div>
+                    </div>
+                    {isLocked ? (
+                      <div className="text-4xl animate-pop">🎉</div>
+                    ) : (
+                      <Button
+                        onClick={() => handlePurchase(reward)}
+                        disabled={!canAfford}
+                        className={`h-14 px-6 text-lg font-bold ${
+                          canAfford
+                            ? "bg-accent text-accent-foreground hover:bg-accent/90"
+                            : "opacity-40 cursor-not-allowed"
+                        }`}
+                      >
+                        🛒 {t("buy")}
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              );
+            })
+          )}
         </div>
 
 
@@ -166,7 +212,9 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
                 <Label htmlFor="purchasePin">{t("pinCode")}</Label>
                 <Input
                   id="purchasePin"
-                  type="password"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && pendingRewardId && handlePinSubmit(pendingRewardId)}
@@ -205,14 +253,18 @@ const Shop = ({ rewards, currentPoints, onPurchaseReward, language, requirePinFo
           <Card className="max-w-sm w-full p-6 bg-card border-4 border-border shadow-2xl animate-pop text-center">
             <div className="text-5xl mb-3">🎉</div>
             <h3 className="text-2xl font-bold text-card-foreground mb-2">{t("congratulations", { name: confirmedRewardName })}</h3>
-            <p className="text-muted-foreground mb-4">{t("rewardAdded")}</p>
+            <p className="text-muted-foreground mb-4">{t("rewardPurchasedMessage")}</p>
             <Button className="w-full" onClick={() => setConfirmOpen(false)}>
               {t("ok")}
             </Button>
           </Card>
         </div>
       )}
-      <BottomNav />
+      <BottomNav
+        childrenProfiles={children}
+        onSelectChild={onSelectChild}
+        hasSelectedChild={hasSelectedChild}
+      />
     </div>
   );
 };

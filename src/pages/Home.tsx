@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Child } from "@/types";
 import { toast } from "sonner";
 import { z } from "zod";
-import { cn } from "@/lib/utils";
 import homeBackground from "@/assets/home-background.jpg";
 import { useWelcomeSound } from "@/hooks/useWelcomeSound";
 import { Language, translate } from "@/lib/i18n";
@@ -18,12 +17,12 @@ import { Language, translate } from "@/lib/i18n";
 interface HomeProps {
   children: Child[];
   onSelectChild: (childId: string) => void;
-  onAddChild: (child: Omit<Child, "id" | "points">) => void;
+  onAddChild: (child: Omit<Child, "id" | "points" | "tasks" | "rewards">) => void;
   language: Language;
-  onChangeLanguage: (language: Language) => void;
+  hasSelectedChild: boolean;
 }
 
-const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage }: HomeProps) => {
+const Home = ({ children, onSelectChild, onAddChild, language, hasSelectedChild }: HomeProps) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
@@ -139,7 +138,7 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
       <div className="max-w-md w-full space-y-8 relative z-10 px-2 sm:px-0 py-4 sm:py-8">
         <div className="text-center space-y-2">
           <h1 className="font-bold text-primary">
-            <span className="inline-flex items-center justify-center gap-2 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight whitespace-nowrap">
+            <span className="inline-flex w-full items-center justify-center gap-2 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight whitespace-nowrap">
               <span aria-hidden>⭐</span>
               <span>{t("appTitle")}</span>
               <span aria-hidden>⭐</span>
@@ -175,18 +174,27 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
               </Button>
             </Card>
           ))}
-          {/* Flytende knapp for å legge til barn */}
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <button
-                className="fixed bottom-20 right-4 z-50 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-full shadow-2xl w-16 h-16 flex items-center justify-center border-4 border-background hover:scale-110 hover:shadow-glow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 animate-bounce-subtle"
-                aria-label={t("addChild")}
-                type="button"
-              >
-                <Plus className="w-8 h-8" />
-              </button>
+              {children.length === 0 ? (
+                <button
+                  className="fixed bottom-20 right-4 z-50 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-full shadow-2xl w-16 h-16 flex items-center justify-center border-4 border-background hover:scale-110 hover:shadow-glow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 animate-bounce-subtle"
+                  aria-label={t("addChild")}
+                  type="button"
+                >
+                  <Plus className="w-8 h-8" />
+                </button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12 text-lg font-semibold"
+                >
+                  {t("addChild")}
+                </Button>
+              )}
             </DialogTrigger>
-            <DialogContent className="max-w-md flex flex-col max-h-[90vh]">
+            <DialogContent className="max-w-md w-[calc(100%-2rem)] flex flex-col max-h-[90vh]">
               <DialogHeader>
                 <DialogTitle className="text-2xl">{t("addNewChild")}</DialogTitle>
               </DialogHeader>
@@ -255,7 +263,11 @@ const Home = ({ children, onSelectChild, onAddChild, language, onChangeLanguage 
             </Button>
         </DialogContent>
       </Dialog>
-      <BottomNav language={language} onChangeLanguage={onChangeLanguage} showLanguageToggle />
+      <BottomNav
+        childrenProfiles={children}
+        onSelectChild={onSelectChild}
+        hasSelectedChild={hasSelectedChild}
+      />
     </div>
   );
 };

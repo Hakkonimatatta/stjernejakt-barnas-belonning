@@ -1,4 +1,4 @@
-import { AppData, Task, Reward } from "@/types";
+import { AppData, Task, Reward, Child } from "@/types";
 import { Language, loadLanguage } from "@/lib/i18n";
 
 const STORAGE_KEY = "stjernejakt_data";
@@ -37,40 +37,66 @@ const defaultData: AppData = {
   },
 };
 
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const toTaskArray = (value: unknown, fallback: Task[]): Task[] =>
+  Array.isArray(value) ? (value as Task[]) : fallback;
+
+const toRewardArray = (value: unknown, fallback: Reward[]): Reward[] =>
+  Array.isArray(value) ? (value as Reward[]) : fallback;
+
+const toChildArray = (value: unknown): Partial<Child>[] =>
+  Array.isArray(value) ? (value as Partial<Child>[]) : [];
+
 // Migrate old data structure to new structure
-const migrateData = (data: any, language: Language): AppData => {
-  // If data has the old structure (tasks/rewards at root level)
-  if (data.tasks && data.rewards && Array.isArray(data.tasks)) {
-    const migratedChildren = data.children.map((child: any) => ({
+const migrateData = (data: Record<string, unknown>, language: Language): AppData => {
+  const hasOldStructure = Array.isArray(data.tasks) && Array.isArray(data.rewards);
+  const childrenRaw = toChildArray(data.children);
+
+  if (hasOldStructure) {
+    const tasks = toTaskArray(data.tasks, getDefaultTasks(language));
+    const rewards = toRewardArray(data.rewards, getDefaultRewards(language));
+
+    const migratedChildren = childrenRaw.map((child) => ({
       ...child,
-      tasks: child.tasks || [...data.tasks],
-      rewards: child.rewards || [...data.rewards],
-    }));
-    
+      tasks: toTaskArray(child.tasks, tasks),
+      rewards: toRewardArray(child.rewards, rewards),
+      enable24hReset:
+        typeof child.enable24hReset === "boolean"
+          ? child.enable24hReset
+          : (data.settings as AppData["settings"] | undefined)?.enable24hReset ?? true,
+    })) as Child[];
+
     return {
       children: migratedChildren,
-      settings: data.settings,
+      settings: (data.settings as AppData["settings"]) ?? defaultData.settings,
     };
   }
-  
-  // Already new structure or needs default tasks/rewards
+
   return {
     ...data,
-    children: data.children.map((child: any) => ({
+    children: childrenRaw.map((child) => ({
       ...child,
-      tasks: child.tasks || getDefaultTasks(language),
-      rewards: child.rewards || getDefaultRewards(language),
-    })),
-  };
+      tasks: toTaskArray(child.tasks, getDefaultTasks(language)),
+      rewards: toRewardArray(child.rewards, getDefaultRewards(language)),
+      enable24hReset:
+        typeof child.enable24hReset === "boolean"
+          ? child.enable24hReset
+          : (data.settings as AppData["settings"] | undefined)?.enable24hReset ?? true,
+    })) as Child[],
+  } as AppData;
 };
 
 function sanitizeData(input: unknown, language: Language): AppData {
   try {
-    const d = input as Partial<AppData> | null | undefined;
-    if (!d || typeof d !== "object") return defaultData;
-    const migrated = migrateData(d, language);
+    if (!isObject(input)) return defaultData;
+    const migrated = migrateData(input, language);
     const children = Array.isArray(migrated.children) ? migrated.children : defaultData.children;
-    const settings = migrated.settings && typeof migrated.settings === "object" ? migrated.settings : defaultData.settings;
+    const settings =
+      migrated.settings && typeof migrated.settings === "object"
+        ? migrated.settings
+        : defaultData.settings;
     return { children, settings } as AppData;
   } catch {
     return defaultData;
@@ -115,47 +141,39 @@ const rewardTranslationMap: Record<string, { no: string; en: string }> = {
 export const mergeAppData = (localData: AppData, remoteData: AppData): AppData => {
   const mergedChildren = localData.children.map((localChild) => {
     const remoteChild = remoteData.children.find((c) => c.id === localChild.id);
-    
-    if (!remoteChild) {
-      // Child only exists locally
-      return localChild;
-    }
 
-    // Merge tasks - keep both, mark completed if either has it completed
-    const taskMap = new Map<string, any>();
-    
+    if (!remoteChild) return localChild;
+
+    const taskMap = new Map<string, Task>();
+
     localChild.tasks.forEach((task) => {
       taskMap.set(task.id, task);
     });
-    
+
     remoteChild.tasks.forEach((task) => {
       const existing = taskMap.get(task.id);
       if (existing) {
-        // If either device has it completed, mark as completed
         taskMap.set(task.id, { ...existing, completed: existing.completed || task.completed });
       } else {
         taskMap.set(task.id, task);
       }
     });
 
-    // Merge rewards - keep both, mark purchased if either has it purchased
-    const rewardMap = new Map<string, any>();
-    
+    const rewardMap = new Map<string, Reward>();
+
     localChild.rewards.forEach((reward) => {
       rewardMap.set(reward.id, reward);
     });
-    
+
     remoteChild.rewards.forEach((reward) => {
       const existing = rewardMap.get(reward.id);
       if (existing) {
-        // If either device has it purchased, mark as purchased
         rewardMap.set(reward.id, { ...existing, purchased: existing.purchased || reward.purchased });
       } else {
         rewardMap.set(reward.id, reward);
       }
     });
 
-    // Merge points - add them together
     const mergedPoints = localChild.points + remoteChild.points;
 
     return {
@@ -166,7 +184,6 @@ export const mergeAppData = (localData: AppData, remoteData: AppData): AppData =
     };
   });
 
-  // Add any children that only exist in remote data
   const localChildIds = new Set(localData.children.map((c) => c.id));
   remoteData.children.forEach((remoteChild) => {
     if (!localChildIds.has(remoteChild.id)) {
@@ -176,7 +193,7 @@ export const mergeAppData = (localData: AppData, remoteData: AppData): AppData =
 
   return {
     children: mergedChildren,
-    settings: localData.settings, // Keep local settings (PIN, etc)
+    settings: localData.settings,
   };
 };
 
@@ -189,7 +206,6 @@ export const translateDefaultItems = (data: AppData, targetLanguage: Language): 
       tasks: child.tasks.map((task) => {
         const translation = taskTranslationMap[task.icon];
         if (translation) {
-          // Check if this task matches one of the default tasks in either language
           if (task.name === translation.no || task.name === translation.en) {
             return { ...task, name: translation[targetLanguage] };
           }
@@ -199,7 +215,6 @@ export const translateDefaultItems = (data: AppData, targetLanguage: Language): 
       rewards: child.rewards.map((reward) => {
         const translation = rewardTranslationMap[reward.icon];
         if (translation) {
-          // Check if this reward matches one of the default rewards in either language
           if (reward.name === translation.no || reward.name === translation.en) {
             return { ...reward, name: translation[targetLanguage] };
           }
@@ -209,4 +224,3 @@ export const translateDefaultItems = (data: AppData, targetLanguage: Language): 
     })),
   };
 };
-

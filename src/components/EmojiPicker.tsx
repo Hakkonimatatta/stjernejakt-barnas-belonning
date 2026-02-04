@@ -127,6 +127,9 @@ const EmojiPicker = ({ value, onChange, placeholder = "Velg emoji", quickEmojis 
           }
         }
         
+        if (value) {
+          matchedEmojis.delete(value);
+        }
         return Array.from(matchedEmojis);
       })()
     : [];

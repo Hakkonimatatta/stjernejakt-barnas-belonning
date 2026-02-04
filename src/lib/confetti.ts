@@ -40,7 +40,9 @@ export function preInitConfetti() {
 function cleanup() {
   try {
     confettiInstance?.reset();
-  } catch {}
+  } catch (err) {
+    console.warn("Confetti reset failed:", err);
+  }
   confettiInstance = null;
   if (canvasEl && canvasEl.parentNode) {
     canvasEl.parentNode.removeChild(canvasEl);
@@ -52,12 +54,12 @@ export function fireConfetti(opts?: Options) {
   const instance = ensureInstance();
   const isAndroid = isAndroidWebView();
   const defaults: Options = {
-    particleCount: isAndroid ? 100 : 120, // More particles for better visual effect
-    spread: isAndroid ? 70 : 60, // Wider spread on Android
+    particleCount: isAndroid ? 100 : 120,
+    spread: isAndroid ? 70 : 60,
     origin: { y: 0.6 },
     disableForReducedMotion: false,
-    ticks: isAndroid ? 120 : 200, // Faster animation on Android
-    startVelocity: isAndroid ? 30 : 35, // Slightly slower velocity on Android
+    ticks: isAndroid ? 120 : 200,
+    startVelocity: isAndroid ? 30 : 35,
     scalar: 0.9,
   };
 

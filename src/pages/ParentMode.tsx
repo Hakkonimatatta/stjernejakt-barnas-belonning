@@ -1,17 +1,17 @@
-import { useMemo, useState } from "react";
-import { ChevronLeft } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Task, Reward, Child } from "@/types";
 import EmojiPicker, { getSuggestedEmojis } from "@/components/EmojiPicker";
 import { Language, translate } from "@/lib/i18n";
-import ActivityLog from "@/components/ActivityLog";
 
 interface ParentModeProps {
   onResetTasks: (childId: string) => void;
@@ -29,53 +29,36 @@ interface ParentModeProps {
   onUpdatePin: (newPin: string) => void;
   onTogglePinForPurchase: (require: boolean) => void;
   requirePinForPurchase: boolean;
-  enable24hReset: boolean;
-  onToggle24hReset: (enable: boolean) => void;
+  onToggle24hReset: (childId: string, enable: boolean) => void;
   onResetAllData: () => void;
   language: Language;
+  onChangeLanguage: (language: Language) => void;
 }
 
-const ParentMode = ({ 
-  onResetTasks, 
-  onResetTask, 
-  onResetReward, 
-  onResetRewards, 
-  onAddTask, 
-  onDeleteTask, 
+const ParentMode = ({
+  onResetTasks,
+  onResetTask,
+  onResetReward,
+  onResetRewards,
+  onAddTask,
+  onDeleteTask,
   onDeleteChild,
-  onAddReward, 
-  onDeleteReward, 
-  onAdjustPoints, 
-  children, 
-  currentPin, 
+  onAddReward,
+  onDeleteReward,
+  onAdjustPoints,
+  children,
+  currentPin,
   onUpdatePin,
   onTogglePinForPurchase,
   requirePinForPurchase,
-  enable24hReset,
   onToggle24hReset,
-  onResetAllData,
   language,
+  onChangeLanguage,
 }: ParentModeProps) => {
   const navigate = useNavigate();
-  
-  // Back logic: if a child is selected, just deselect to stay in Parent Mode; otherwise leave to home
-  const handleBack = () => {
-    if (selectedChildId) {
-      setSelectedChildId(null);
-      return;
-    }
-    navigate("/");
-  };
-
-  const [unlocked, setUnlocked] = useState(false);
   const [pin, setPin] = useState("");
+  const [unlocked, setUnlocked] = useState(false);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
-  const [deleteChildId, setDeleteChildId] = useState<string | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
-  const [isDeleteTaskDialogOpen, setIsDeleteTaskDialogOpen] = useState(false);
-  const [deleteRewardId, setDeleteRewardId] = useState<string | null>(null);
-  const [isDeleteRewardDialogOpen, setIsDeleteRewardDialogOpen] = useState(false);
   const [taskName, setTaskName] = useState("");
   const [taskIcon, setTaskIcon] = useState("");
   const [taskPoints, setTaskPoints] = useState("5");
@@ -84,108 +67,93 @@ const ParentMode = ({
   const [rewardIcon, setRewardIcon] = useState("");
   const [rewardCost, setRewardCost] = useState("20");
   const [rewardErrors, setRewardErrors] = useState<{ name?: string; icon?: string; cost?: string }>({});
+  const [showAllTasks, setShowAllTasks] = useState(false);
+  const [showAllRewards, setShowAllRewards] = useState(false);
   const [newPin, setNewPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [pinError, setPinError] = useState("");
-  const [pinShake, setPinShake] = useState(false);
   const [pointsToDeduct, setPointsToDeduct] = useState<Record<string, string>>({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteAction, setDeleteAction] = useState<
+    | { type: "task"; id: string }
+    | { type: "reward"; id: string }
+    | { type: "child"; id: string }
+    | null
+  >(null);
 
   const t = (key: Parameters<typeof translate>[1], params?: Parameters<typeof translate>[2]) =>
     translate(language, key, params);
 
-  const taskSchema = useMemo(
-    () =>
-      z.object({
-        name: z
-          .string()
-          .trim()
-          .min(1, t("taskNameCannotBeEmpty"))
-          .max(50, t("taskNameTooLong")),
-        icon: z.string().trim().min(1, t("selectIconRequired")),
-        points: z
-          .number()
-          .int()
-          .min(1, t("pointsMin"))
-          .max(100, t("pointsMax")),
-      }),
-    [language]
-  );
+  const taskSchema = z.object({
+    name: z
+      .string()
+      .trim()
+      .min(1, t("taskNameCannotBeEmpty"))
+      .max(50, t("taskNameTooLong")),
+    icon: z.string().trim().min(1, t("selectIconRequired")),
+    points: z.number().int().min(1, t("pointsMin")).max(100, t("pointsMax")),
+  });
 
-  const rewardSchema = useMemo(
-    () =>
-      z.object({
-        name: z
-          .string()
-          .trim()
-          .min(1, t("rewardNameCannotBeEmpty"))
-          .max(50, t("rewardNameTooLong")),
-        icon: z.string().trim().min(1, t("selectIconRequired")),
-        cost: z
-          .number()
-          .int()
-          .min(1, t("priceMin"))
-          .max(1000, t("priceMax")),
-      }),
-    [language]
-  );
+  const rewardSchema = z.object({
+    name: z
+      .string()
+      .trim()
+      .min(1, t("rewardNameCannotBeEmpty"))
+      .max(50, t("rewardNameTooLong")),
+    icon: z.string().trim().min(1, t("selectIconRequired")),
+    cost: z.number().int().min(1, t("priceMin")).max(1000, t("priceMax")),
+  });
 
-  const totalTasks = useMemo(
-    () => children.reduce((sum, child) => sum + child.tasks.length, 0),
-    [children]
-  );
+  const selectedChild = children.find((c) => c.id === selectedChildId);
+  const hasChildren = children.length > 0;
 
-  const totalRewards = useMemo(
-    () => children.reduce((sum, child) => sum + child.rewards.length, 0),
-    [children]
-  );
-
-  const selectedChild = children.find(c => c.id === selectedChildId);
+  useEffect(() => {
+    const unlockedFlag = sessionStorage.getItem("parent_unlocked") === "true";
+    if (unlockedFlag) {
+      setUnlocked(true);
+    }
+  }, []);
 
   const handleUnlock = () => {
     if (pin === currentPin) {
       setUnlocked(true);
-      setPinShake(false);
+      sessionStorage.setItem("parent_unlocked", "true");
+      toast.success(t("welcomeParent"));
     } else {
       toast.error(t("wrongPin"));
-      setPinShake(true);
-      window.setTimeout(() => setPinShake(false), 350);
       setPin("");
     }
   };
 
   const handleResetTasks = () => {
-    if (!selectedChildId) return;
-    onResetTasks(selectedChildId);
+    if (!selectedChild) return;
+    onResetTasks(selectedChild.id);
     toast.success(t("allTasksReset"));
   };
 
+  const handleResetRewards = () => {
+    if (!selectedChild) return;
+    onResetRewards(selectedChild.id);
+    toast.success(t("allRewardsReset"));
+  };
+
   const handleAddTask = () => {
-    if (!selectedChildId) return;
-    
-    // Sjekk om barnet allerede har 3 oppgaver
-    const child = children.find(c => c.id === selectedChildId);
-    if (child && child.tasks.length >= 3) {
-      toast.info(t("trialPhaseLimit"), {
-        duration: 5000,
-      });
-      return;
-    }
-    
+    if (!selectedChild) return;
     try {
       setErrors({});
-      
+
       const validated = taskSchema.parse({
         name: taskName,
         icon: taskIcon,
-        points: Number(taskPoints),
+        points: Number.parseInt(taskPoints, 10),
       });
 
-      onAddTask(selectedChildId, {
+      onAddTask(selectedChild.id, {
         name: validated.name,
         icon: validated.icon,
         points: validated.points,
       });
-      
+
       setTaskName("");
       setTaskIcon("");
       setTaskPoints("5");
@@ -205,45 +173,40 @@ const ParentMode = ({
   };
 
   const handleDeleteTask = (taskId: string) => {
-    setDeleteTaskId(taskId);
-    setIsDeleteTaskDialogOpen(true);
-  };
-
-  const confirmDeleteTask = () => {
-    if (!selectedChildId || !deleteTaskId) return;
-    onDeleteTask(selectedChildId, deleteTaskId);
-    setIsDeleteTaskDialogOpen(false);
-    setDeleteTaskId(null);
+    if (!selectedChild) return;
+    onDeleteTask(selectedChild.id, taskId);
     toast.success(t("taskDeleted"));
   };
 
-  const handleAddReward = () => {
-    if (!selectedChildId) return;
-    
-    // Sjekk om barnet allerede har 3 belønninger
-    const child = children.find(c => c.id === selectedChildId);
-    if (child && child.rewards.length >= 3) {
-      toast.info(t("trialPhaseLimit"), {
-        duration: 5000,
-      });
+  const handleDeleteChild = (childId: string) => {
+    if (children.length === 1) {
+      toast.error(t("mustHaveOneChild"));
       return;
     }
-    
+    onDeleteChild(childId);
+    if (selectedChildId === childId) {
+      setSelectedChildId(null);
+    }
+    toast.success(t("childRemoved"));
+  };
+
+  const handleAddReward = () => {
+    if (!selectedChild) return;
     try {
       setRewardErrors({});
-      
+
       const validated = rewardSchema.parse({
         name: rewardName,
         icon: rewardIcon,
-        cost: Number(rewardCost),
+        cost: Number.parseInt(rewardCost, 10),
       });
 
-      onAddReward(selectedChildId, {
+      onAddReward(selectedChild.id, {
         name: validated.name,
         icon: validated.icon,
         cost: validated.cost,
       });
-      
+
       setRewardName("");
       setRewardIcon("");
       setRewardCost("20");
@@ -263,77 +226,93 @@ const ParentMode = ({
   };
 
   const handleDeleteReward = (rewardId: string) => {
-    setDeleteRewardId(rewardId);
-    setIsDeleteRewardDialogOpen(true);
-  };
-
-  const handleDeleteChild = (childId: string) => {
-    setDeleteChildId(childId);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const confirmDeleteChild = () => {
-    if (!deleteChildId) return;
-    onDeleteChild(deleteChildId);
-    if (selectedChildId === deleteChildId) {
-      setSelectedChildId(null);
-    }
-    setIsDeleteDialogOpen(false);
-    setDeleteChildId(null);
-    toast.success(t("childRemoved"));
-  };
-
-  const confirmDeleteReward = () => {
-    if (!selectedChildId || !deleteRewardId) return;
-    onDeleteReward(selectedChildId, deleteRewardId);
-    setIsDeleteRewardDialogOpen(false);
-    setDeleteRewardId(null);
+    if (!selectedChild) return;
+    onDeleteReward(selectedChild.id, rewardId);
     toast.success(t("rewardDeleted"));
+  };
+
+  const openDeleteDialog = (action: NonNullable<typeof deleteAction>) => {
+    setDeleteAction(action);
+    setDeleteDialogOpen(true);
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setDeleteAction(null);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteAction) return;
+    if (deleteAction.type === "task") {
+      handleDeleteTask(deleteAction.id);
+    } else if (deleteAction.type === "reward") {
+      handleDeleteReward(deleteAction.id);
+    } else {
+      handleDeleteChild(deleteAction.id);
+    }
+    closeDeleteDialog();
+  };
+
+  const deleteTitle = () => {
+    if (!deleteAction) return "";
+    if (deleteAction.type === "task") return t("confirmDeleteTask");
+    if (deleteAction.type === "reward") return t("confirmDeleteReward");
+    const childName = children.find((child) => child.id === deleteAction.id)?.name ?? "";
+    return t("confirmDeleteTitle", { name: childName });
+  };
+
+  const deleteDescription = () => {
+    if (!deleteAction) return "";
+    if (deleteAction.type === "task") return t("confirmDeleteTaskDescription");
+    if (deleteAction.type === "reward") return t("confirmDeleteRewardDescription");
+    return t("confirmDeleteDescription");
   };
 
   const handleChangePin = () => {
     setPinError("");
-    
+
     if (!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
       setPinError(t("pinMustBe4Digits"));
       return;
     }
-    
+
     if (newPin !== confirmPin) {
       setPinError(t("pinsDoNotMatch"));
       return;
     }
-    
+
     onUpdatePin(newPin);
     setNewPin("");
     setConfirmPin("");
     toast.success(t("pinUpdated"));
   };
 
-  const handleAdjustPointsLocal = (direction: "add" | "deduct") => {
+  const handleAddPoints = () => {
     if (!selectedChild) return;
-
-    const raw = pointsToDeduct[selectedChild.id] || "0";
-    const points = parseInt(raw, 10);
-
+    const points = Number.parseInt(pointsToDeduct[selectedChild.id] || "0", 10);
     if (!Number.isFinite(points) || points <= 0) {
       toast.error(t("enterValidPoints"));
       return;
     }
-
-    if (direction === "deduct") {
-      if (points > selectedChild.points) {
-        toast.error(t("cannotDeductMore"));
-        return;
-      }
-      onAdjustPoints(selectedChild.id, -points);
-      toast.success(t("pointsDeducted", { points, name: selectedChild.name }));
-    } else {
-      onAdjustPoints(selectedChild.id, points);
-      toast.success(t("pointsAdded", { points, name: selectedChild.name }));
-    }
-
+    onAdjustPoints(selectedChild.id, points);
     setPointsToDeduct({ ...pointsToDeduct, [selectedChild.id]: "" });
+    toast.success(t("pointsAdded", { points, name: selectedChild.name }));
+  };
+
+  const handleDeductPoints = () => {
+    if (!selectedChild) return;
+    const points = Number.parseInt(pointsToDeduct[selectedChild.id] || "0", 10);
+    if (!Number.isFinite(points) || points <= 0) {
+      toast.error(t("enterValidPoints"));
+      return;
+    }
+    if (points > selectedChild.points) {
+      toast.error(t("cannotDeductMore"));
+      return;
+    }
+    onAdjustPoints(selectedChild.id, -points);
+    setPointsToDeduct({ ...pointsToDeduct, [selectedChild.id]: "" });
+    toast.success(t("pointsDeducted", { points, name: selectedChild.name }));
   };
 
   if (!unlocked) {
@@ -342,46 +321,39 @@ const ParentMode = ({
         <Card className="max-w-md w-full p-8 bg-card border-4 border-border shadow-lg">
           <div className="space-y-6">
             <div className="text-center">
-              <h1 className="text-4xl font-bold text-primary mb-2">{t("parentMode")}</h1>
+              <h1 className="text-3xl font-bold text-primary mb-2">{t("parentMode")}</h1>
               <p className="text-muted-foreground">{t("enterPin")}</p>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <Label htmlFor="pin">{t("pinCode")}</Label>
                 <Input
                   id="pin"
-                  type="password"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleUnlock()}
+                  onKeyDown={(e) => e.key === "Enter" && handleUnlock()}
                   placeholder="****"
                   maxLength={4}
-                  className={`text-2xl text-center h-14 ${pinShake ? "border-destructive animate-shake" : ""}`}
-                  autoFocus
+                  className="text-2xl text-center h-14"
                 />
               </div>
-              
-              <Button 
-                onClick={handleUnlock}
-                className="w-full h-14 text-lg font-bold"
-              >
+
+              <Button onClick={handleUnlock} className="w-full h-14 text-lg font-bold">
                 {t("unlock")}
               </Button>
-              
-              <Button 
-                variant="outline"
-                onClick={handleBack}
-                className="w-full h-12 text-lg"
-              >
+
+              <Button variant="outline" onClick={() => navigate("/")} className="w-full h-12 text-lg">
                 {t("cancel")}
               </Button>
             </div>
-            
-            <div className="mt-4 p-4 bg-yellow-100 dark:bg-yellow-900/30 border-2 border-yellow-500 rounded-lg">
-              <p className="text-sm font-bold text-center text-gray-900 dark:text-gray-100">
-                {t("defaultPin")}
-              </p>
+
+            <div className="text-xs text-center text-muted-foreground space-y-1">
+              <div>{t("defaultPin")}</div>
+              <div>{t("defaultPinHint")}</div>
             </div>
           </div>
         </Card>
@@ -390,41 +362,58 @@ const ParentMode = ({
   }
 
   return (
-    <div className="min-h-screen bg-background p-0 sm:p-0 flex flex-col">
-      {/* Sticky toppbar */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-lg flex items-center justify-center gap-2 px-4 py-3 border-b-2 border-border/30 shadow-soft relative">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleBack}
-          aria-label={t("back")}
-          className="hover:bg-primary/10 absolute left-2"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-        <h1 className="text-2xl sm:text-3xl font-bold text-primary text-center">{t("parentMode")}</h1>
-      </div>
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-md mx-auto space-y-6">
+        <div className="grid grid-cols-[auto,1fr,auto] items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              sessionStorage.removeItem("parent_unlocked");
+              navigate("/");
+            }}
+            aria-label={t("back")}
+            className="hover:bg-primary/10"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+          <h1 className="text-3xl font-bold text-primary text-center">{t("parentMode")}</h1>
+          <div className="w-10" />
+        </div>
 
-      <div className="flex-1 max-w-md w-full mx-auto space-y-6 px-2 sm:px-0 py-4 sm:py-6">
+        {hasChildren ? (
+          <>
+            <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              {t("childSettings")}
+            </div>
 
-        {/* Velg barn */}
-        <Card className="p-6 bg-card border-4 border-border shadow-lg">
-          <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("selectChildToManage")}</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {children.map((child) => (
-              <Button
-                key={child.id}
-                variant={selectedChildId === child.id ? "default" : "outline"}
-                className="h-20 flex flex-col gap-1 overflow-hidden"
-                onClick={() => setSelectedChildId(child.id)}
-                title={child.name}
-              >
-                <span className="text-3xl">{child.avatar}</span>
-                <span className="text-sm font-semibold truncate w-full px-1">{child.name}</span>
-              </Button>
-            ))}
-          </div>
-        </Card>
+            <Card className="p-6 bg-card border-4 border-border shadow-lg">
+              <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("selectChildToManage")}</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {children.map((child) => (
+                  <Button
+                    key={child.id}
+                    variant={selectedChildId === child.id ? "default" : "outline"}
+                    className="h-20 flex flex-col gap-1"
+                    onClick={() => setSelectedChildId(child.id)}
+                  >
+                    <span className="text-3xl">{child.avatar}</span>
+                    <span className="text-sm font-semibold">{child.name}</span>
+                  </Button>
+                ))}
+              </div>
+            </Card>
+          </>
+        ) : (
+          <Card className="p-6 bg-card border-4 border-border shadow-lg text-center space-y-3">
+            <div className="text-4xl">👶</div>
+            <div className="text-lg font-semibold text-card-foreground">{t("noChildrenYet")}</div>
+            <p className="text-sm text-muted-foreground">{t("addChildFromHome")}</p>
+            <Button onClick={() => navigate("/")} className="w-full">
+              {t("addChild")}
+            </Button>
+          </Card>
+        )}
 
         {selectedChild && (
           <>
@@ -432,7 +421,7 @@ const ParentMode = ({
               <h2 className="text-2xl font-bold text-card-foreground mb-4">
                 {t("tasksForChild", { name: selectedChild.name })}
               </h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="taskName">{t("taskName")}</Label>
@@ -480,26 +469,26 @@ const ParentMode = ({
                 </Button>
               </div>
 
-              <div className="mt-6 space-y-2 max-h-64 overflow-y-auto">
-                <h3 className="font-semibold text-muted-foreground">{t("existingTasks")}:</h3>
-                {selectedChild.tasks.map((task) => (
-                  <div key={task.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-muted rounded-lg">
-                    <div className="flex items-center gap-3 min-w-0">
+              <div className="mt-6 space-y-2">
+                <h3 className="font-semibold text-muted-foreground">{t("existingTasks")}</h3>
+                {selectedChild.tasks.slice(0, 3).map((task) => (
+                  <div key={task.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div className="flex items-center gap-3">
                       <span className="text-2xl">{task.icon}</span>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-card-foreground break-words">{task.name}</p>
+                      <div>
+                        <p className="font-semibold text-card-foreground">{task.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {task.points} {t("points")} {task.completed && t("completed")}
+                          {task.points} {t("points")} {task.completed && "✅"}
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2 w-full sm:w-auto justify-end sm:justify-start">
+                    <div className="flex gap-2">
                       {task.completed && (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            onResetTask(selectedChildId!, task.id);
+                            onResetTask(selectedChild.id, task.id);
                             toast.success(t("taskReset"));
                           }}
                         >
@@ -509,15 +498,20 @@ const ParentMode = ({
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleDeleteTask(task.id)}
+                        onClick={() => openDeleteDialog({ type: "task", id: task.id })}
                       >
-                        🗑️ {t("delete")}
+                        {t("delete")}
                       </Button>
                     </div>
                   </div>
                 ))}
                 {selectedChild.tasks.length === 0 && (
                   <p className="text-center text-muted-foreground py-4">{t("noTasksYet")}</p>
+                )}
+                {selectedChild.tasks.length > 3 && (
+                  <Button variant="outline" className="w-full" onClick={() => setShowAllTasks(true)}>
+                    {t("viewAllTasks", { count: selectedChild.tasks.length })}
+                  </Button>
                 )}
               </div>
             </Card>
@@ -526,7 +520,7 @@ const ParentMode = ({
               <h2 className="text-2xl font-bold text-card-foreground mb-4">
                 {t("rewardsForChild", { name: selectedChild.name })}
               </h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="rewardName">{t("rewardName")}</Label>
@@ -574,26 +568,26 @@ const ParentMode = ({
                 </Button>
               </div>
 
-              <div className="mt-6 space-y-2 max-h-64 overflow-y-auto">
-                <h3 className="font-semibold text-muted-foreground">{t("existingRewards")}:</h3>
-                {selectedChild.rewards.map((reward) => (
-                  <div key={reward.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-muted rounded-lg">
-                    <div className="flex items-center gap-3 min-w-0">
+              <div className="mt-6 space-y-2">
+                <h3 className="font-semibold text-muted-foreground">{t("existingRewards")}</h3>
+                {selectedChild.rewards.slice(0, 3).map((reward) => (
+                  <div key={reward.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div className="flex items-center gap-3">
                       <span className="text-2xl">{reward.icon}</span>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-card-foreground break-words">{reward.name}</p>
+                      <div>
+                        <p className="font-semibold text-card-foreground">{reward.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {reward.cost} {t("points")} {reward.purchased && t("completed")}
+                          {reward.cost} {t("points")} {reward.purchased && "✅"}
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2 w-full sm:w-auto justify-end sm:justify-start">
+                    <div className="flex gap-2">
                       {reward.purchased && (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            onResetReward(selectedChildId!, reward.id);
+                            onResetReward(selectedChild.id, reward.id);
                             toast.success(t("rewardReset"));
                           }}
                         >
@@ -603,15 +597,20 @@ const ParentMode = ({
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleDeleteReward(reward.id)}
+                        onClick={() => openDeleteDialog({ type: "reward", id: reward.id })}
                       >
-                        🗑️ {t("delete")}
+                        {t("delete")}
                       </Button>
                     </div>
                   </div>
                 ))}
                 {selectedChild.rewards.length === 0 && (
                   <p className="text-center text-muted-foreground py-4">{t("noRewardsYet")}</p>
+                )}
+                {selectedChild.rewards.length > 3 && (
+                  <Button variant="outline" className="w-full" onClick={() => setShowAllRewards(true)}>
+                    {t("viewAllRewards", { count: selectedChild.rewards.length })}
+                  </Button>
                 )}
               </div>
             </Card>
@@ -632,68 +631,138 @@ const ParentMode = ({
                   onChange={(e) => setPointsToDeduct({ ...pointsToDeduct, [selectedChild.id]: e.target.value })}
                   className="h-10 flex-1"
                 />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAdjustPointsLocal("add")}
-                >
+                <Button variant="outline" size="sm" onClick={handleAddPoints}>
                   {t("addPoints")}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAdjustPointsLocal("deduct")}
-                >
+                <Button variant="outline" size="sm" onClick={handleDeductPoints}>
                   {t("deduct")}
                 </Button>
               </div>
             </Card>
 
             <Card className="p-6 bg-card border-4 border-border shadow-lg">
-              <h2 className="text-2xl font-bold text-card-foreground mb-4">
-                {t("activityLog", { name: selectedChild.name })}
-              </h2>
-              <ActivityLog activities={selectedChild.activities} />
+              <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("enable24hReset")}</h2>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <div className="font-semibold text-card-foreground">{t("enable24hReset")}</div>
+                  <p className="text-sm text-muted-foreground">{t("enable24hResetDescription")}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {selectedChild.enable24hReset !== false ? t("on") : t("off")}
+                  </span>
+                  <Switch
+                    checked={selectedChild.enable24hReset !== false}
+                    onCheckedChange={(value) => onToggle24hReset(selectedChild.id, value)}
+                  />
+                </div>
+              </div>
+              <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <div className="font-semibold text-card-foreground">{t("requirePinForPurchase")}</div>
+                  <p className="text-sm text-muted-foreground">{t("pinRequiredForShop")}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {requirePinForPurchase ? t("on") : t("off")}
+                  </span>
+                  <Switch checked={requirePinForPurchase} onCheckedChange={onTogglePinForPurchase} />
+                </div>
+              </div>
             </Card>
           </>
         )}
 
+        {!selectedChild && (
+          <Card className="p-6 bg-card border-4 border-border shadow-lg">
+            <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("changePin")}</h2>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="newPin">{t("newPin")}</Label>
+                <Input
+                  id="newPin"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  value={newPin}
+                  onChange={(e) => setNewPin(e.target.value)}
+                  placeholder={t("newPin")}
+                  maxLength={4}
+                  className="h-12 text-lg"
+                />
+              </div>
+              <div>
+                <Label htmlFor="confirmPin">{t("confirmPin")}</Label>
+                <Input
+                  id="confirmPin"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  value={confirmPin}
+                  onChange={(e) => setConfirmPin(e.target.value)}
+                  placeholder={t("confirmPin")}
+                  maxLength={4}
+                  className="h-12 text-lg"
+                />
+              </div>
+              {pinError && <p className="text-sm text-destructive">{pinError}</p>}
+              <Button onClick={handleChangePin} className="w-full h-12 text-lg">
+                {t("updatePin")}
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {hasChildren && (
+          <Card className="p-6 bg-card border-4 border-border shadow-lg">
+            <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("manageChildren")}</h2>
+
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {children.map((child) => (
+                <div key={child.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{child.avatar}</span>
+                    <div>
+                      <p className="font-semibold text-card-foreground">{child.name}</p>
+                      <p className="text-sm text-muted-foreground">{child.points} {t("points")}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => openDeleteDialog({ type: "child", id: child.id })}
+                    disabled={children.length === 1}
+                  >
+                    {t("delete")}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
         <Card className="p-6 bg-card border-4 border-border shadow-lg">
-          <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("purchaseSettings")}</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>{t("requirePinForPurchase")}</Label>
-                <p className="text-sm text-muted-foreground">{t("pinRequiredForShop")}</p>
-              </div>
-              <Button
-                variant="default"
-                onClick={() => onTogglePinForPurchase(!requirePinForPurchase)}
-                className={requirePinForPurchase ? "w-32 h-12 min-w-32 text-sm font-semibold whitespace-nowrap inline-flex items-center justify-center bg-success text-white hover:bg-success/90" : "w-32 h-12 min-w-32 text-sm font-semibold whitespace-nowrap inline-flex items-center justify-center bg-destructive text-destructive-foreground hover:bg-destructive/90"}
-              >
-                {requirePinForPurchase ? t("on") : t("off")}
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>{t("enable24hReset")}</Label>
-                <p className="text-sm text-muted-foreground">{t("enable24hResetDescription")}</p>
-              </div>
-              <Button
-                variant="default"
-                onClick={() => onToggle24hReset(!enable24hReset)}
-                className={enable24hReset ? "w-32 h-12 min-w-32 text-sm font-semibold whitespace-nowrap inline-flex items-center justify-center bg-success text-white hover:bg-success/90" : "w-32 h-12 min-w-32 text-sm font-semibold whitespace-nowrap inline-flex items-center justify-center bg-destructive text-destructive-foreground hover:bg-destructive/90"}
-              >
-                {enable24hReset ? t("on") : t("off")}
-              </Button>
-            </div>
+          <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("language")}</h2>
+          <div className="flex gap-2">
+            <Button
+              variant={language === "no" ? "default" : "outline"}
+              onClick={() => onChangeLanguage("no")}
+              className="flex-1"
+            >
+              🇳🇴 {t("norwegian")}
+            </Button>
+            <Button
+              variant={language === "en" ? "default" : "outline"}
+              onClick={() => onChangeLanguage("en")}
+              className="flex-1"
+            >
+              🇬🇧 {t("english")}
+            </Button>
           </div>
         </Card>
 
-        <Card 
-          className="p-6 bg-card border-4 border-border shadow-lg cursor-pointer hover:bg-muted/50 transition-colors"
-          onClick={() => navigate("/sync")}
-        >
+        <Card className="p-6 bg-card border-4 border-border shadow-lg">
           <div className="flex items-center gap-4">
             <div className="text-4xl">📱</div>
             <div>
@@ -701,113 +770,145 @@ const ParentMode = ({
               <p className="text-sm text-muted-foreground">{t("syncTapToOpen")}</p>
             </div>
           </div>
+          <Button
+            className="w-full mt-4"
+            onClick={() => {
+              sessionStorage.setItem("parent_unlocked", "true");
+              navigate("/sync");
+            }}
+          >
+            {t("syncOpen")}
+          </Button>
         </Card>
-
-        {selectedChild && (
-          <Card className="p-4 bg-card border-4 border-border shadow-lg">
-            <Button
-              variant="destructive"
-              className="w-full h-12 text-base font-semibold"
-              onClick={() => handleDeleteChild(selectedChild.id)}
-            >
-              🗑️ {t("deleteChild")}
-            </Button>
-          </Card>
-        )}
-
-        <Card className="p-6 bg-card border-4 border-border shadow-lg">
-          <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("changePin")}</h2>
-          
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="newPin">{t("newPin")}</Label>
-              <Input
-                id="newPin"
-                type="password"
-                value={newPin}
-                onChange={(e) => setNewPin(e.target.value)}
-                placeholder={t("newPin")}
-                maxLength={4}
-                className="h-12 text-lg"
-              />
-            </div>
-            <div>
-              <Label htmlFor="confirmPin">{t("confirmPin")}</Label>
-              <Input
-                id="confirmPin"
-                type="password"
-                value={confirmPin}
-                onChange={(e) => setConfirmPin(e.target.value)}
-                placeholder={t("confirmPin")}
-                maxLength={4}
-                className="h-12 text-lg"
-              />
-            </div>
-            {pinError && <p className="text-sm text-destructive">{pinError}</p>}
-            <Button
-              onClick={handleChangePin}
-              className="w-full h-12 text-lg"
-            >
-              {t("updatePin")}
-            </Button>
-          </div>
-        </Card>
-
-
 
         <Card className="p-4 bg-muted/50 border-2 border-dashed border-muted-foreground/30">
-          <h3 className="font-semibold text-muted-foreground mb-2">💡 {t("tips")}</h3>
+          <h3 className="font-semibold text-muted-foreground mb-2">{t("tips")}</h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
+            <li>{t("tip1")}</li>
+            <li>{t("tip2")}</li>
             <li>{t("tip3")}</li>
           </ul>
         </Card>
       </div>
 
-      {/* Bekreftelsesdialog for sletting av oppgave */}
-      <Dialog open={isDeleteTaskDialogOpen} onOpenChange={setIsDeleteTaskDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>⚠️ {t("confirmDeleteTask")}</DialogTitle>
-            <DialogDescription>
-              {t("confirmDeleteTaskDescription")}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsDeleteTaskDialogOpen(false)}>{t("cancel")}</Button>
-            <Button variant="destructive" onClick={confirmDeleteTask}>🗑️ {t("delete")}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {selectedChild && (
+        <Dialog open={showAllTasks} onOpenChange={setShowAllTasks}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t("allTasksTitle", { name: selectedChild.name })}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 max-h-[70vh] overflow-y-auto">
+              {selectedChild.tasks.map((task) => (
+                <div key={task.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{task.icon}</span>
+                    <div>
+                      <p className="font-semibold text-card-foreground">{task.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {task.points} {t("points")} {task.completed && "✅"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {task.completed && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          onResetTask(selectedChild.id, task.id);
+                          toast.success(t("taskReset"));
+                        }}
+                      >
+                        {t("reset")}
+                      </Button>
+                    )}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => openDeleteDialog({ type: "task", id: task.id })}
+                    >
+                      {t("delete")}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {selectedChild.tasks.length === 0 && (
+                <p className="text-center text-muted-foreground py-4">{t("noTasksYet")}</p>
+              )}
+            </div>
+            <Button className="w-full" onClick={() => setShowAllTasks(false)}>
+              {t("close")}
+            </Button>
+          </DialogContent>
+        </Dialog>
+      )}
 
-      {/* Bekreftelsesdialog for sletting av belønning */}
-      <Dialog open={isDeleteRewardDialogOpen} onOpenChange={setIsDeleteRewardDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>⚠️ {t("confirmDeleteReward")}</DialogTitle>
-            <DialogDescription>
-              {t("confirmDeleteRewardDescription")}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsDeleteRewardDialogOpen(false)}>{t("cancel")}</Button>
-            <Button variant="destructive" onClick={confirmDeleteReward}>🗑️ {t("delete")}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {selectedChild && (
+        <Dialog open={showAllRewards} onOpenChange={setShowAllRewards}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t("allRewardsTitle", { name: selectedChild.name })}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 max-h-[70vh] overflow-y-auto">
+              {selectedChild.rewards.map((reward) => (
+                <div key={reward.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{reward.icon}</span>
+                    <div>
+                      <p className="font-semibold text-card-foreground">{reward.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {reward.cost} {t("points")} {reward.purchased && "✅"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {reward.purchased && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          onResetReward(selectedChild.id, reward.id);
+                          toast.success(t("rewardReset"));
+                        }}
+                      >
+                        {t("reset")}
+                      </Button>
+                    )}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => openDeleteDialog({ type: "reward", id: reward.id })}
+                    >
+                      {t("delete")}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {selectedChild.rewards.length === 0 && (
+                <p className="text-center text-muted-foreground py-4">{t("noRewardsYet")}</p>
+              )}
+            </div>
+            <Button className="w-full" onClick={() => setShowAllRewards(false)}>
+              {t("close")}
+            </Button>
+          </DialogContent>
+        </Dialog>
+      )}
 
-      {/* Bekreftelsesdialog for sletting av barn */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>{t("confirmDeleteTitle", { name: children.find(c => c.id === deleteChildId)?.name || "" })}</DialogTitle>
-            <DialogDescription>
-              {t("confirmDeleteDescription")}
-            </DialogDescription>
+            <DialogTitle>{deleteTitle()}</DialogTitle>
+            <DialogDescription>{deleteDescription()}</DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>{t("cancel")}</Button>
-            <Button variant="destructive" onClick={confirmDeleteChild}>🗑️ {t("delete")}</Button>
-          </DialogFooter>
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={closeDeleteDialog}>
+              {t("confirmNo")}
+            </Button>
+            <Button variant="destructive" className="flex-1" onClick={confirmDelete}>
+              {t("confirmYes")}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

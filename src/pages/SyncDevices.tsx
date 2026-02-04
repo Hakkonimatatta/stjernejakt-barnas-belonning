@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, Smartphone, RefreshCw, Wifi, Users, QrCode, Camera, Mail } from "lucide-react";
+import { ChevronLeft, Smartphone, RefreshCw, QrCode, Camera, Mail } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Html5Qrcode } from "html5-qrcode";
 import { toast } from "sonner";
@@ -28,6 +28,10 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
     translate(language, key, params);
 
   const handleExportData = () => {
+    if (dataSize > QR_MAX_SIZE) {
+      toast.error(t("qrTooLarge"));
+      return;
+    }
     setShowQR(true);
     toast.success(t("qrCodeGenerated"));
   };
@@ -157,21 +161,24 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
   const dataString = JSON.stringify(appData);
   const dataSize = new Blob([dataString]).size;
   const dataSizeKB = (dataSize / 1024).toFixed(1);
+  const QR_MAX_SIZE = 1200;
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-primary/20 via-secondary/10 to-background p-0 sm:p-0">
       {/* Sticky toppbar */}
-      <div className="sticky top-0 z-30 bg-background/90 backdrop-blur flex items-center gap-2 px-4 py-3 border-b border-border shadow-sm w-full max-w-md mx-auto">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate(-1)}
-          aria-label={t("back")}
-          className="mr-2"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-        <span className="text-lg font-bold flex-1 text-center">{t("syncAcrossDevices")}</span>
+      <div className="sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border shadow-sm w-full">
+        <div className="flex items-center gap-2 px-4 py-3 w-full max-w-md mx-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/parent")}
+            aria-label={t("back")}
+            className="mr-2"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+          <span className="text-lg font-bold flex-1 text-center">{t("syncAcrossDevices")}</span>
+        </div>
       </div>
 
       <div className="max-w-md mx-auto space-y-6 pt-4 px-2 sm:px-0">
@@ -236,10 +243,10 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
                   <Button
                     onClick={handleExportData}
                     className="w-full h-12"
-                    disabled={dataSize > 2900}
+                    disabled={dataSize > QR_MAX_SIZE}
                   >
                     <QrCode className="mr-2 h-5 w-5" />
-                    {t("showQRCode")} ({dataSizeKB} KB)
+                    {t("showQRCode")}
                   </Button>
                   
                   <Button
@@ -262,9 +269,13 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
                   </Button>
                 </div>
                 
-                {dataSize > 2900 && (
+                <p className="text-xs text-muted-foreground mb-2">
+                  {t("dataSizeLabel", { size: dataSizeKB })}
+                </p>
+
+                {dataSize > QR_MAX_SIZE && (
                   <p className="text-xs text-destructive mb-4">
-                    ⚠️ {t("tooMuchData", { size: dataSizeKB })}
+                    ⚠️ {t("qrTooLarge")}
                   </p>
                 )}
 
@@ -334,17 +345,6 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
           </div>
         </Card>
 
-        {/* Info cards */}
-        <div className="grid grid-cols-2 gap-3">
-          <Card className="p-4 bg-card border-2 border-border text-center">
-            <Wifi className="h-6 w-6 text-primary mx-auto mb-2" />
-            <p className="text-xs text-muted-foreground">{t("noInternet")}</p>
-          </Card>
-          <Card className="p-4 bg-card border-2 border-border text-center">
-            <Users className="h-6 w-6 text-primary mx-auto mb-2" />
-            <p className="text-xs text-muted-foreground">{t("sameDataEverywhere")}</p>
-          </Card>
-        </div>
       </div>
     </div>
   );

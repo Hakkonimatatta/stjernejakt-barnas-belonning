@@ -16,9 +16,11 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
+  const MAX_POINTS = 9999;
   const BONUS_TASK_TARGET = 3;
   const BONUS_WINDOW_MS = 24 * 60 * 60 * 1000;
   const BONUS_POINTS = 5;
+  const SELECTED_CHILD_KEY = "stjernejakt_selected_child";
   const initialLanguage = loadLanguage();
   const [language, setLanguage] = useState<Language>(initialLanguage);
   const [appData, setAppData] = useState<AppData>(() => {
@@ -35,33 +37,59 @@ const App = () => {
     saveData(appData);
   }, [appData]);
 
-  // Handle deep-link from URL parameter (e.g., from email)
+  useEffect(() => {
+    const hasSelectedChild = selectedChildId
+      ? appData.children.some((child) => child.id === selectedChildId)
+      : false;
+
+    if (selectedChildId && !hasSelectedChild) {
+      setSelectedChildId(null);
+      return;
+    }
+
+    if (!selectedChildId) {
+      try {
+        const stored = localStorage.getItem(SELECTED_CHILD_KEY);
+        if (stored && appData.children.some((child) => child.id === stored)) {
+          setSelectedChildId(stored);
+        }
+      } catch (err) {
+        console.warn("Failed to load selected child:", err);
+      }
+    }
+  }, [appData.children, selectedChildId]);
+
+  useEffect(() => {
+    try {
+      if (selectedChildId) {
+        localStorage.setItem(SELECTED_CHILD_KEY, selectedChildId);
+      } else {
+        localStorage.removeItem(SELECTED_CHILD_KEY);
+      }
+    } catch (err) {
+      console.warn("Failed to save selected child:", err);
+    }
+  }, [selectedChildId]);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const syncData = params.get("syncData");
-    
+
     if (syncData) {
       try {
         const decodedData = JSON.parse(decodeURIComponent(syncData)) as AppData;
-        
-        // Validate basic structure
+
         if (decodedData.children && decodedData.settings) {
-          // Merge the remote data with local data
-          const mergedData = mergeAppData(appData, decodedData);
-          setAppData(mergedData);
-          
-          // Clean up URL to prevent double-import on refresh
+          setAppData((prev) => mergeAppData(prev, decodedData));
           window.history.replaceState({}, document.title, window.location.pathname);
-          
           console.log("Data synced from deep-link");
         }
       } catch (err) {
         console.error("Error processing deep-link data:", err);
       }
     }
-  }, []); // Run only once on mount
+  }, []);
 
-  // Sjekk for auto-reset hvert 100ms for umiddelbar reset
   useEffect(() => {
     const interval = setInterval(() => {
       setAppData((prevData) => autoResetExpiredItems(prevData));
@@ -73,13 +101,14 @@ const App = () => {
 
   const handleCompleteTask = (taskId: string) => {
     if (!selectedChildId) return;
-    
+
     setAppData((prevData) => {
       const child = prevData.children.find((c) => c.id === selectedChildId);
       if (!child) return prevData;
-      
+
       const task = child.tasks.find((t) => t.id === taskId);
-      if (!task || task.completed) return prevData;
+      const enable24hReset = child.enable24hReset !== false;
+      if (!task || (task.completed && enable24hReset)) return prevData;
       const now = Date.now();
 
       return {
@@ -109,9 +138,15 @@ const App = () => {
 
           return {
             ...c,
-            points: c.points + task.points + bonusPoints,
+            points: Math.min(MAX_POINTS, c.points + task.points + bonusPoints),
             tasks: c.tasks.map((t) =>
-              t.id === taskId ? { ...t, completed: true, completedAt: now } : t
+              t.id === taskId
+                ? {
+                    ...t,
+                    completed: enable24hReset ? true : false,
+                    completedAt: enable24hReset ? now : undefined,
+                  }
+                : t
             ),
             activities,
             bonusLastAwardedAt: canAwardBonus ? now : c.bonusLastAwardedAt,
@@ -123,13 +158,14 @@ const App = () => {
 
   const handlePurchaseReward = (rewardId: string) => {
     if (!selectedChildId) return;
-    
+
     setAppData((prevData) => {
       const child = prevData.children.find((c) => c.id === selectedChildId);
       if (!child) return prevData;
-      
+
       const reward = child.rewards.find((r) => r.id === rewardId);
-      if (!reward || reward.purchased || child.points < reward.cost) return prevData;
+      const enable24hReset = child.enable24hReset !== false;
+      if (!reward || (reward.purchased && enable24hReset) || child.points < reward.cost) return prevData;
 
       return {
         ...prevData,
@@ -139,7 +175,13 @@ const App = () => {
                 ...c,
                 points: c.points - reward.cost,
                 rewards: c.rewards.map((r) =>
-                  r.id === rewardId ? { ...r, purchased: true, purchasedAt: Date.now() } : r
+                  r.id === rewardId
+                    ? {
+                        ...r,
+                        purchased: enable24hReset ? true : false,
+                        purchasedAt: enable24hReset ? Date.now() : undefined,
+                      }
+                    : r
                 ),
                 activities: [
                   ...(c.activities || []),
@@ -243,6 +285,7 @@ const App = () => {
       points: 0,
       tasks: getDefaultTasks(language),
       rewards: getDefaultRewards(language),
+      enable24hReset: true,
     };
     setAppData((prevData) => ({
       ...prevData,
@@ -300,20 +343,21 @@ const App = () => {
     }));
   };
 
-  const handleToggle24hReset = (enable: boolean) => {
+  const handleToggle24hReset = (childId: string, enable: boolean) => {
     setAppData((prevData) => ({
       ...prevData,
-      settings: {
-        ...prevData.settings,
-        enable24hReset: enable,
-      },
+      children: prevData.children.map((c) =>
+        c.id === childId ? { ...c, enable24hReset: enable } : c
+      ),
     }));
   };
 
   const handleResetAllData = () => {
     try {
       localStorage.removeItem("stjernejakt_data");
-    } catch {}
+    } catch (err) {
+      console.warn("Failed to clear storage:", err);
+    }
     setSelectedChildId(null);
     const fresh = loadData(language);
     setAppData(fresh);
@@ -323,7 +367,7 @@ const App = () => {
     setAppData((prevData) => ({
       ...prevData,
       children: prevData.children.map((c) =>
-        c.id === childId ? { ...c, points: Math.max(0, c.points + points) } : c
+        c.id === childId ? { ...c, points: Math.max(0, Math.min(MAX_POINTS, c.points + points)) } : c
       ),
     }));
   };
@@ -347,20 +391,23 @@ const App = () => {
                 onSelectChild={setSelectedChildId}
                 onAddChild={handleAddChild}
                 language={language}
-                onChangeLanguage={setLanguage}
+                hasSelectedChild={Boolean(selectedChildId)}
               />
             }
           />
           <Route
             path="/tasks"
             element={
-              <Tasks 
-                tasks={selectedChild?.tasks || []} 
-                onCompleteTask={handleCompleteTask} 
+              <Tasks
+                tasks={selectedChild?.tasks || []}
+                onCompleteTask={handleCompleteTask}
                 currentPoints={selectedChild?.points || 0}
-                enable24hReset={appData.settings?.enable24hReset !== false}
+                enable24hReset={selectedChild?.enable24hReset !== false}
                 activities={selectedChild?.activities || []}
                 language={language}
+                children={appData.children}
+                onSelectChild={setSelectedChildId}
+                hasSelectedChild={Boolean(selectedChildId)}
               />
             }
           />
@@ -374,6 +421,11 @@ const App = () => {
                 language={language}
                 requirePinForPurchase={appData.settings?.requirePinForPurchase || false}
                 parentPin={appData.settings?.parentPin || "1234"}
+                hasSelectedChild={Boolean(selectedChildId)}
+                enable24hReset={selectedChild?.enable24hReset !== false}
+                children={appData.children}
+                onSelectChild={setSelectedChildId}
+                selectedChildAvatar={selectedChild?.avatar}
               />
             }
           />
@@ -396,22 +448,16 @@ const App = () => {
                 onUpdatePin={handleUpdatePin}
                 onTogglePinForPurchase={handleTogglePinForPurchase}
                 requirePinForPurchase={appData.settings?.requirePinForPurchase || false}
-                enable24hReset={appData.settings?.enable24hReset !== false}
                 onToggle24hReset={handleToggle24hReset}
                 onResetAllData={handleResetAllData}
                 language={language}
+                onChangeLanguage={setLanguage}
               />
             }
           />
           <Route
             path="/sync"
-            element={
-              <SyncDevices
-                appData={appData}
-                onImportData={handleImportData}
-                language={language}
-              />
-            }
+            element={<SyncDevices appData={appData} onImportData={handleImportData} language={language} />}
           />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="*" element={<NotFound />} />
