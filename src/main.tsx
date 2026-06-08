@@ -30,8 +30,8 @@ if (rootElement) {
   console.error("❌ Root element NOT found!");
 }
 
-// Register service worker for PWA support (only on http/https, not file:// or capacitor://)
-if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+// Register service worker for PWA support (only in production, not during local dev)
+if ("serviceWorker" in navigator && location.protocol === "https:") {
   navigator.serviceWorker.register("/service-worker.js").catch((error) => {
     console.log("Service Worker registration failed:", error);
   });
