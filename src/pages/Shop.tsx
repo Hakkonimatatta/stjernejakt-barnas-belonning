@@ -9,6 +9,7 @@ import { Child, Reward } from "@/types";
 import { toast } from "sonner";
 import { Language, translate } from "@/lib/i18n";
 import { fireConfetti } from "@/lib/confetti";
+import { initializeAudioContext, playSuccessSequence } from "@/lib/audioManager";
 import { BottomNav } from "@/components/ui/bottom-nav";
 
 interface ShopProps {
@@ -59,6 +60,8 @@ const Shop = ({
   const handlePinSubmit = (rewardId: string) => {
     if (pin === parentPin) {
       onPurchaseReward(rewardId);
+      initializeAudioContext();
+      void playSuccessSequence();
       fireConfetti();
       setConfirmOpen(true);
       setConfirmedRewardName(rewards.find(r => r.id === rewardId)?.name || "Reward");
@@ -89,6 +92,8 @@ const Shop = ({
         setPinDialogOpen(true);
       } else {
         onPurchaseReward(reward.id);
+        initializeAudioContext();
+        void playSuccessSequence();
         fireConfetti();
         setConfirmOpen(true);
         setConfirmedRewardName(reward.name);

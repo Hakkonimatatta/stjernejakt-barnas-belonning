@@ -1,4 +1,4 @@
-const ICON = "/icon-192.png";
+const ICON = "/icon-180.png";
 
 const scheduleToday = (hour: number, title: string, body: string) => {
   const now = new Date();
@@ -12,7 +12,7 @@ const scheduleToday = (hour: number, title: string, body: string) => {
 };
 
 export const initNotifications = async (): Promise<boolean> => {
-  if (!("Notification" in window)) return false;
+  if (typeof Notification === "undefined") return false;
   if (Notification.permission === "denied") return false;
 
   let permission = Notification.permission;
@@ -26,5 +26,5 @@ export const initNotifications = async (): Promise<boolean> => {
   return true;
 };
 
-export const notificationsSupported = () => "Notification" in window;
-export const notificationsGranted = () => Notification.permission === "granted";
+export const notificationsSupported = () => typeof Notification !== "undefined";
+export const notificationsGranted = () => typeof Notification !== "undefined" && Notification.permission === "granted";
