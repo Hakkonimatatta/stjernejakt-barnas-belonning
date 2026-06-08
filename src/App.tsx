@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { loadData, saveData, getDefaultTasks, getDefaultRewards, mergeAppData } from "@/lib/storage";
+import { initNotifications } from "@/lib/notifications";
 import { autoResetExpiredItems } from "@/lib/autoReset";
 import { loadLanguage, saveLanguage, Language } from "@/lib/i18n";
 import { AppData, Child, Task, Reward } from "@/types";
@@ -93,8 +94,15 @@ const App = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setAppData((prevData) => autoResetExpiredItems(prevData));
-    }, 100);
+    }, 60_000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Schedule daily notifications if permission already granted (no prompt on load)
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+      initNotifications();
+    }
   }, []);
 
   const selectedChild = appData.children.find((c) => c.id === selectedChildId);
@@ -372,6 +380,49 @@ const App = () => {
     }));
   };
 
+  const handleUndoLastActivity = (childId: string, activityId: string) => {
+    setAppData((prevData) => {
+      const child = prevData.children.find((c) => c.id === childId);
+      if (!child?.activities) return prevData;
+
+      const activity = child.activities.find((a) => a.id === activityId);
+      if (!activity) return prevData;
+
+      return {
+        ...prevData,
+        children: prevData.children.map((c) => {
+          if (c.id !== childId) return c;
+
+          let tasks = c.tasks;
+          let rewards = c.rewards;
+          let pointDelta = 0;
+
+          if (activity.type === "task") {
+            const task = c.tasks.find((t) => t.name === activity.name && t.completed && t.completedAt === activity.timestamp);
+            if (task) {
+              tasks = c.tasks.map((t) => t.id === task.id ? { ...t, completed: false, completedAt: undefined } : t);
+              pointDelta = -activity.points;
+            }
+          } else if (activity.type === "reward") {
+            const reward = c.rewards.find((r) => r.name === activity.name && r.purchased && r.purchasedAt === activity.timestamp);
+            if (reward) {
+              rewards = c.rewards.map((r) => r.id === reward.id ? { ...r, purchased: false, purchasedAt: undefined } : r);
+              pointDelta = -activity.points; // points is negative for rewards, so this refunds
+            }
+          }
+
+          return {
+            ...c,
+            points: Math.max(0, Math.min(MAX_POINTS, c.points + pointDelta)),
+            tasks,
+            rewards,
+            activities: c.activities?.filter((a) => a.id !== activityId) ?? [],
+          };
+        }),
+      };
+    });
+  };
+
   const handleImportData = (data: AppData) => {
     setAppData(data);
     setSelectedChildId(null);
@@ -450,6 +501,7 @@ const App = () => {
                 requirePinForPurchase={appData.settings?.requirePinForPurchase || false}
                 onToggle24hReset={handleToggle24hReset}
                 onResetAllData={handleResetAllData}
+                onUndoLastActivity={handleUndoLastActivity}
                 language={language}
                 onChangeLanguage={setLanguage}
               />

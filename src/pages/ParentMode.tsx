@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Task, Reward, Child } from "@/types";
 import EmojiPicker, { getSuggestedEmojis } from "@/components/EmojiPicker";
+import ActivityLog from "@/components/ActivityLog";
+import { initNotifications, notificationsSupported, notificationsGranted } from "@/lib/notifications";
 import { Language, translate } from "@/lib/i18n";
 
 interface ParentModeProps {
@@ -31,6 +33,7 @@ interface ParentModeProps {
   requirePinForPurchase: boolean;
   onToggle24hReset: (childId: string, enable: boolean) => void;
   onResetAllData: () => void;
+  onUndoLastActivity: (childId: string, activityId: string) => void;
   language: Language;
   onChangeLanguage: (language: Language) => void;
 }
@@ -52,6 +55,7 @@ const ParentMode = ({
   onTogglePinForPurchase,
   requirePinForPurchase,
   onToggle24hReset,
+  onUndoLastActivity,
   language,
   onChangeLanguage,
 }: ParentModeProps) => {
@@ -104,8 +108,20 @@ const ParentMode = ({
     cost: z.number().int().min(1, t("priceMin")).max(1000, t("priceMax")),
   });
 
+  const [notificationsEnabled, setNotificationsEnabled] = useState(notificationsGranted);
+
   const selectedChild = children.find((c) => c.id === selectedChildId);
   const hasChildren = children.length > 0;
+
+  const handleEnableNotifications = async () => {
+    const granted = await initNotifications();
+    if (granted) {
+      setNotificationsEnabled(true);
+      toast.success(t("notificationsEnabled"));
+    } else {
+      toast.error(t("notificationsDenied"));
+    }
+  };
 
 
   const handleUnlock = () => {
@@ -659,6 +675,16 @@ const ParentMode = ({
               </div>
             </Card>
 
+            {selectedChild.activities && selectedChild.activities.length > 0 && (
+              <ActivityLog
+                activities={selectedChild.activities}
+                onUndo={(activityId) => {
+                  onUndoLastActivity(selectedChild.id, activityId);
+                  toast.success(t("undoSuccess"));
+                }}
+              />
+            )}
+
             <Card className="p-6 bg-card border-4 border-border shadow-lg">
               <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("enable24hReset")}</h2>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -758,6 +784,20 @@ const ParentMode = ({
                 </div>
               ))}
             </div>
+          </Card>
+        )}
+
+        {notificationsSupported() && (
+          <Card className="p-6 bg-card border-4 border-border shadow-lg">
+            <h2 className="text-2xl font-bold text-card-foreground mb-1">{t("notificationsTitle")}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{t("notificationsDescription")}</p>
+            {notificationsEnabled ? (
+              <p className="text-sm font-semibold text-green-600">✅ {t("notificationsEnabled")}</p>
+            ) : (
+              <Button onClick={handleEnableNotifications} className="w-full">
+                {t("enableNotifications")}
+              </Button>
+            )}
           </Card>
         )}
 

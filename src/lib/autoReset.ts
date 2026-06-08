@@ -1,50 +1,38 @@
 import { AppData } from "@/types";
 
-const RESET_10H_MS = 10 * 60 * 60 * 1000;
+// Returns true if the timestamp was on a different calendar day than today
+const isFromPreviousDay = (timestamp: number): boolean =>
+  new Date(timestamp).toDateString() !== new Date().toDateString();
 
 export const autoResetExpiredItems = (data: AppData): AppData => {
-  const now = Date.now();
   let hasChanges = false;
 
   const children = data.children.map((child) => {
     let childChanged = false;
-    const enable24hReset = child.enable24hReset !== false;
-    const taskResetTime = enable24hReset ? RESET_10H_MS : 0;
-    const rewardResetTime = enable24hReset ? RESET_10H_MS : 0;
+    const enable = child.enable24hReset !== false;
+
+    if (!enable) return child;
 
     const tasks = child.tasks.map((task) => {
-      if (task.completed && task.completedAt) {
-        const elapsed = now - task.completedAt;
-        if (elapsed >= taskResetTime) {
-          childChanged = true;
-          hasChanges = true;
-          return { ...task, completed: false, completedAt: undefined };
-        }
+      if (task.completed && task.completedAt && isFromPreviousDay(task.completedAt)) {
+        childChanged = true;
+        hasChanges = true;
+        return { ...task, completed: false, completedAt: undefined };
       }
       return task;
     });
 
     const rewards = child.rewards.map((reward) => {
-      if (reward.purchased && reward.purchasedAt) {
-        const elapsed = now - reward.purchasedAt;
-        if (elapsed >= rewardResetTime) {
-          childChanged = true;
-          hasChanges = true;
-          return { ...reward, purchased: false, purchasedAt: undefined };
-        }
+      if (reward.purchased && reward.purchasedAt && isFromPreviousDay(reward.purchasedAt)) {
+        childChanged = true;
+        hasChanges = true;
+        return { ...reward, purchased: false, purchasedAt: undefined };
       }
       return reward;
     });
 
-    if (childChanged) {
-      return { ...child, tasks, rewards };
-    }
-    return child;
+    return childChanged ? { ...child, tasks, rewards } : child;
   });
 
-  if (hasChanges) {
-    return { ...data, children };
-  }
-
-  return data;
+  return hasChanges ? { ...data, children } : data;
 };

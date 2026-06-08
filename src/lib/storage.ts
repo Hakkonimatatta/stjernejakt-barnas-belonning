@@ -19,14 +19,18 @@ export const getDefaultTasks = (language: Language = loadLanguage()): Task[] =>
 export const getDefaultRewards = (language: Language = loadLanguage()): Reward[] =>
   language === "en"
     ? [
-        { id: "1", name: "Ice cream on Saturday", icon: "🍦", cost: 30, purchased: false },
-        { id: "2", name: "10 extra minutes screen time", icon: "📱", cost: 10, purchased: false },
-        { id: "3", name: "Family outing", icon: "🎠", cost: 100, purchased: false },
+        { id: "1", name: "Extra bedtime story", icon: "📖", cost: 10, purchased: false },
+        { id: "2", name: "Choose the movie night film", icon: "🎬", cost: 20, purchased: false },
+        { id: "3", name: "Choose dinner this week", icon: "🍳", cost: 30, purchased: false },
+        { id: "4", name: "Game night with mum/dad", icon: "🎲", cost: 40, purchased: false },
+        { id: "5", name: "Choose the weekend outing", icon: "🏞️", cost: 60, purchased: false },
       ]
     : [
-        { id: "1", name: "Is på lørdag", icon: "🍦", cost: 30, purchased: false },
-        { id: "2", name: "10 min ekstra skjermtid", icon: "📱", cost: 10, purchased: false },
-        { id: "3", name: "Familieutflukt", icon: "🎠", cost: 100, purchased: false },
+        { id: "1", name: "Ekstra godnatthistorie", icon: "📖", cost: 10, purchased: false },
+        { id: "2", name: "Velge film til filmkvelden", icon: "🎬", cost: 20, purchased: false },
+        { id: "3", name: "Bestemme middagen", icon: "🍳", cost: 30, purchased: false },
+        { id: "4", name: "Spillkveld med mamma/pappa", icon: "🎲", cost: 40, purchased: false },
+        { id: "5", name: "Velge helgeutflukt", icon: "🏞️", cost: 60, purchased: false },
       ];
 
 const defaultData: AppData = {
@@ -132,9 +136,11 @@ const taskTranslationMap: Record<string, { no: string; en: string }> = {
 };
 
 const rewardTranslationMap: Record<string, { no: string; en: string }> = {
-  "🍦": { no: "Is på lørdag", en: "Ice cream on Saturday" },
-  "📱": { no: "10 min ekstra skjermtid", en: "10 extra minutes screen time" },
-  "🎠": { no: "Familieutflukt", en: "Family outing" },
+  "📖": { no: "Ekstra godnatthistorie", en: "Extra bedtime story" },
+  "🎬": { no: "Velge film til filmkvelden", en: "Choose the movie night film" },
+  "🍳": { no: "Bestemme middagen", en: "Choose dinner this week" },
+  "🎲": { no: "Spillkveld med mamma/pappa", en: "Game night with mum/dad" },
+  "🏞️": { no: "Velge helgeutflukt", en: "Choose the weekend outing" },
 };
 
 // Merge data from two devices - combines points and syncs tasks/rewards
