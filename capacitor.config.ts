@@ -13,8 +13,7 @@ const config: CapacitorConfig = {
     }
   },
   ios: {
-    // Camera permission will be requested automatically when accessing camera
-    // The permission message is defined in Info.plist
+    // Kamera-tillatelse spørres automatisk ved bruk
   }
 };
 
