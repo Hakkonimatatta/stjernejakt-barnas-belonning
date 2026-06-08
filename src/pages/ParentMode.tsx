@@ -128,7 +128,6 @@ const ParentMode = ({
     if (pin === currentPin) {
       setUnlocked(true);
       sessionStorage.setItem("parent_unlocked", "true");
-      toast.success(t("welcomeParent"));
     } else {
       toast.error(t("wrongPin"));
       setPin("");

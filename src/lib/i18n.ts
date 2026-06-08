@@ -168,7 +168,7 @@ export const translations = {
     rewardReset: "Belønning tilbakestilt!",
     rewardPurchasedMessage: "Belønning kjøpt!",
     childRemoved: "Barn fjernet",
-    bonusTaskMessage: "Gjør 3 valgfrie oppgaver innen 24 timer og få 5 bonuspoeng!",
+    bonusTaskMessage: "Gjør 3 oppdrag i dag og få 5 ekstra poeng!",
     bonusProgress: "{count} av {total} mot bonusmålet",
     bonusGoal: "Bonusmål",
     confirmDeleteTitle: "Slett {name}?",
