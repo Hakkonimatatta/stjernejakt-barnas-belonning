@@ -194,11 +194,11 @@ const Home = ({ children, onSelectChild, onAddChild, language, hasSelectedChild 
                 </Button>
               )}
             </DialogTrigger>
-            <DialogContent className="max-w-md w-[calc(100%-2rem)] flex flex-col max-h-[90vh]">
+            <DialogContent className="max-w-md w-[calc(100%-2rem)] overflow-y-auto max-h-[90dvh]">
               <DialogHeader>
                 <DialogTitle className="text-2xl">{t("addNewChild")}</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 py-4 overflow-y-auto flex-1">
+              <div className="space-y-4 py-2">
                 <div>
                   <Label htmlFor="childName">{t("name")}</Label>
                   <Input
@@ -214,7 +214,7 @@ const Home = ({ children, onSelectChild, onAddChild, language, hasSelectedChild 
                 </div>
                 <div>
                   <Label>{t("selectAvatar")}</Label>
-                  <div className="grid grid-cols-5 gap-2 max-h-72 overflow-y-auto pr-2">
+                  <div className="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto pr-2">
                     {avatars.map((avatar) => (
                       <Button
                         key={avatar}
@@ -229,14 +229,14 @@ const Home = ({ children, onSelectChild, onAddChild, language, hasSelectedChild 
                   </div>
                   {errors.avatar && <p className="text-sm text-destructive mt-1">{errors.avatar}</p>}
                 </div>
+                <Button
+                  onClick={handleAddChild}
+                  size="lg"
+                  className="w-full font-bold bg-[#F2C94C] hover:bg-[#E5BC3C] text-[#2B2200]"
+                >
+                  {t("add")}
+                </Button>
               </div>
-              <Button
-                onClick={handleAddChild}
-                size="lg"
-                className="w-full font-bold bg-[#F2C94C] hover:bg-[#E5BC3C] text-[#2B2200]"
-              >
-                {t("add")}
-              </Button>
             </DialogContent>
           </Dialog>
         </div>
