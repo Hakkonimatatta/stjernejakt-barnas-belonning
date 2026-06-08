@@ -447,7 +447,10 @@ const ParentMode = ({
                     id="taskPoints"
                     type="number"
                     value={taskPoints}
-                    onChange={(e) => setTaskPoints(e.target.value)}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (v === "" || (Number(v) >= 1 && Number(v) <= 100)) setTaskPoints(v);
+                    }}
                     min="1"
                     max="100"
                     className="h-12 text-lg"

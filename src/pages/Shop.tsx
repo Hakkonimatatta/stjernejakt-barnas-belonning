@@ -104,26 +104,28 @@ const Shop = ({
   return (
     <div className="min-h-screen flex flex-col bg-background p-0 sm:p-0">
       {/* Sticky toppbar */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-lg flex items-center gap-2 px-4 py-3 border-b-2 border-border/30 shadow-soft">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate("/tasks")}
-          aria-label={t("back")}
-          className="mr-2 hover:bg-primary/10"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-        <span className="text-3xl sm:text-4xl font-bold flex-1 text-center text-primary">{t("shop")}</span>
-        <div className="flex items-center gap-2">
-          {selectedChildAvatar && (
-            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-card/80 border-2 border-border/30 shadow-md">
-              <span className="text-xl">{selectedChildAvatar}</span>
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-lg border-b-2 border-border/30 shadow-soft">
+        <div className="max-w-md mx-auto flex items-center gap-2 px-4 py-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/tasks")}
+            aria-label={t("back")}
+            className="mr-2 hover:bg-primary/10"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+          <span className="text-3xl sm:text-4xl font-bold flex-1 text-center text-primary">{t("shop")}</span>
+          <div className="flex items-center gap-2">
+            {selectedChildAvatar && (
+              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-card/80 border-2 border-border/30 shadow-md">
+                <span className="text-xl">{selectedChildAvatar}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-center gap-2 bg-card/80 backdrop-blur-sm px-3 py-2 rounded-full border-2 border-border/30 shadow-md">
+              <span className="text-xl">⭐</span>
+              <span className={`text-lg font-bold text-star ${pointsPop ? "animate-pop" : ""}`}>{currentPoints}</span>
             </div>
-          )}
-          <div className="flex items-center justify-center gap-2 bg-card/80 backdrop-blur-sm px-3 py-2 rounded-full border-2 border-border/30 shadow-md">
-          <span className="text-xl">⭐</span>
-          <span className={`text-lg font-bold text-star ${pointsPop ? "animate-pop" : ""}`}>{currentPoints}</span>
           </div>
         </div>
       </div>

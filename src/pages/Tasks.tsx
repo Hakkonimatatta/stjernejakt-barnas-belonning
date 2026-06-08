@@ -111,7 +111,8 @@ const Tasks = ({
 
   return (
     <div className="min-h-screen flex flex-col bg-background p-0 sm:p-0">
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-lg grid grid-cols-[auto,1fr,auto] items-center gap-3 sm:gap-4 px-3 sm:px-4 py-3 border-b-2 border-border/30 shadow-soft">
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-lg border-b-2 border-border/30 shadow-soft">
+      <div className="max-w-md mx-auto grid grid-cols-[auto,1fr,auto] items-center gap-3 sm:gap-4 px-3 sm:px-4 py-3">
         <Button
           variant="ghost"
           size="icon"
@@ -138,6 +139,7 @@ const Tasks = ({
             <span className="text-base font-bold text-star min-w-6 text-center">{currentPoints}</span>
           </div>
         </div>
+      </div>
       </div>
 
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
@@ -231,7 +233,7 @@ const Tasks = ({
           <div className="mt-8 mb-4">
             <div className="text-sm font-semibold text-primary mb-2">{t("bonusTaskMessage")}</div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium text-muted-foreground">{t("tasks")}</span>
+              <span className="text-sm font-medium text-muted-foreground">{t("bonusGoal")}</span>
               <span className="text-xs text-muted-foreground">
                 {t("bonusProgress", {
                   count: Math.min(

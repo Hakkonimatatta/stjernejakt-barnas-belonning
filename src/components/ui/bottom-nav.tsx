@@ -52,7 +52,8 @@ export function BottomNav({ childrenProfiles = [], onSelectChild, hasSelectedChi
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t-2 border-border/50 flex justify-around items-center h-16 shadow-soft">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t-2 border-border/50 h-16 shadow-soft">
+      <div className="max-w-md mx-auto flex justify-around items-center h-full">
       {navItems.map(({ label, icon: Icon, path, emoji, onClick, active }) => {
         const isActive =
           typeof active === "boolean"
@@ -91,6 +92,7 @@ export function BottomNav({ childrenProfiles = [], onSelectChild, hasSelectedChi
           </button>
         );
       })}
+      </div>
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>

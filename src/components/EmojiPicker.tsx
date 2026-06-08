@@ -162,8 +162,14 @@ const EmojiPicker = ({ value, onChange, placeholder = "Velg emoji", quickEmojis 
             variant="outline"
             className="h-12 w-full text-lg justify-center gap-2"
           >
-            {value ? <span className="text-2xl">{value}</span> : null}
-            <span>🔍 Søk flere emoji</span>
+            {value ? (
+              <>
+                <span className="text-2xl">{value}</span>
+                <span className="text-sm text-muted-foreground">Endre</span>
+              </>
+            ) : (
+              <span>🔍 Søk emoji</span>
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-3 bg-popover" align="start">
