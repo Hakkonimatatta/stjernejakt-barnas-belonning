@@ -42,7 +42,7 @@ const Home = ({ children, onSelectChild, onAddChild, language, hasSelectedChild 
   });
 
   useEffect(() => {
-    if (children.length === 0) {
+    if (children.length === 0 && !localStorage.getItem("stjernejakt_welcome_seen")) {
       setWelcomeOpen(true);
     }
   }, [children.length]);
@@ -254,7 +254,10 @@ const Home = ({ children, onSelectChild, onAddChild, language, hasSelectedChild 
             </DialogDescription>
           </DialogHeader>
           <Button
-            onClick={() => setWelcomeOpen(false)}
+            onClick={() => {
+              localStorage.setItem("stjernejakt_welcome_seen", "true");
+              setWelcomeOpen(false);
+            }}
             variant="primary"
             size="default"
             className="w-full text-lg mt-4 font-bold"

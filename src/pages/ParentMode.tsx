@@ -352,7 +352,7 @@ const ParentMode = ({
             </div>
 
             <div className="text-xs text-center text-muted-foreground space-y-1">
-              <div>{t("defaultPin")}</div>
+              <div className="font-bold text-sm text-amber-600 bg-amber-50 rounded px-3 py-1 inline-block">{t("defaultPin")}</div>
               <div>{t("defaultPinHint")}</div>
             </div>
           </div>
