@@ -204,7 +204,7 @@ const Tasks = ({
                         onClick={() => handleComplete(task)}
                         className="h-12 sm:h-14 px-4 sm:px-6 text-base sm:text-lg font-bold bg-success text-white hover:bg-success/90"
                       >
-                        ✓ {t("done")}
+                        ✓ {t("completeTask")}
                       </Button>
                     )}
                   </div>

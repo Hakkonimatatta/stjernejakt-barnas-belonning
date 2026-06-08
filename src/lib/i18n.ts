@@ -46,6 +46,7 @@ export const translations = {
     back: "← Tilbake",
     shop: "Butikk",
     done: "Ferdig!",
+    completeTask: "Fullfør oppgave",
     completed: "✅",
     taskCompleted: "Bra jobba! Du fikk {points} poeng! ⭐",
     welcomeTitle: "Velkommen til Stjernejobb!",

@@ -472,7 +472,14 @@ const ParentMode = ({
               <div className="mt-6 space-y-2">
                 <h3 className="font-semibold text-muted-foreground">{t("existingTasks")}</h3>
                 {selectedChild.tasks.slice(0, 3).map((task) => (
-                  <div key={task.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <Button
+                    key={task.id}
+                    variant="ghost"
+                    className="w-full flex items-center justify-between p-3 bg-muted rounded-lg text-left"
+                    onClick={() => {
+                      /* open quick actions via delete dialog or reset directly */
+                    }}
+                  >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{task.icon}</span>
                       <div>
@@ -487,7 +494,8 @@ const ParentMode = ({
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             onResetTask(selectedChild.id, task.id);
                             toast.success(t("taskReset"));
                           }}
@@ -498,12 +506,15 @@ const ParentMode = ({
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => openDeleteDialog({ type: "task", id: task.id })}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openDeleteDialog({ type: "task", id: task.id });
+                        }}
                       >
                         {t("delete")}
                       </Button>
                     </div>
-                  </div>
+                  </Button>
                 ))}
                 {selectedChild.tasks.length === 0 && (
                   <p className="text-center text-muted-foreground py-4">{t("noTasksYet")}</p>
@@ -571,7 +582,14 @@ const ParentMode = ({
               <div className="mt-6 space-y-2">
                 <h3 className="font-semibold text-muted-foreground">{t("existingRewards")}</h3>
                 {selectedChild.rewards.slice(0, 3).map((reward) => (
-                  <div key={reward.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <Button
+                    key={reward.id}
+                    variant="ghost"
+                    className="w-full flex items-center justify-between p-3 bg-muted rounded-lg text-left"
+                    onClick={() => {
+                      /* quick actions placeholder */
+                    }}
+                  >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{reward.icon}</span>
                       <div>
@@ -586,7 +604,8 @@ const ParentMode = ({
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             onResetReward(selectedChild.id, reward.id);
                             toast.success(t("rewardReset"));
                           }}
@@ -597,12 +616,15 @@ const ParentMode = ({
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => openDeleteDialog({ type: "reward", id: reward.id })}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openDeleteDialog({ type: "reward", id: reward.id });
+                        }}
                       >
                         {t("delete")}
                       </Button>
                     </div>
-                  </div>
+                  </Button>
                 ))}
                 {selectedChild.rewards.length === 0 && (
                   <p className="text-center text-muted-foreground py-4">{t("noRewardsYet")}</p>
@@ -797,7 +819,7 @@ const ParentMode = ({
             <DialogHeader>
               <DialogTitle>{t("allTasksTitle", { name: selectedChild.name })}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-2 max-h-[70vh] overflow-y-auto">
+            <div className="space-y-2">
               {selectedChild.tasks.map((task) => (
                 <div key={task.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div className="flex items-center gap-3">
@@ -849,7 +871,7 @@ const ParentMode = ({
             <DialogHeader>
               <DialogTitle>{t("allRewardsTitle", { name: selectedChild.name })}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-2 max-h-[70vh] overflow-y-auto">
+            <div className="space-y-2">
               {selectedChild.rewards.map((reward) => (
                 <div key={reward.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div className="flex items-center gap-3">
