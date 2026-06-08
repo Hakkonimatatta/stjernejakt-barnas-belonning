@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,7 +57,7 @@ const ParentMode = ({
 }: ParentModeProps) => {
   const navigate = useNavigate();
   const [pin, setPin] = useState("");
-  const [unlocked, setUnlocked] = useState(false);
+  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem("parent_unlocked") === "true");
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [taskName, setTaskName] = useState("");
   const [taskIcon, setTaskIcon] = useState("");
@@ -107,12 +107,6 @@ const ParentMode = ({
   const selectedChild = children.find((c) => c.id === selectedChildId);
   const hasChildren = children.length > 0;
 
-  useEffect(() => {
-    const unlockedFlag = sessionStorage.getItem("parent_unlocked") === "true";
-    if (unlockedFlag) {
-      setUnlocked(true);
-    }
-  }, []);
 
   const handleUnlock = () => {
     if (pin === currentPin) {

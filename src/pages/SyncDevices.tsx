@@ -171,7 +171,7 @@ const SyncDevices = ({ appData, onImportData, language }: SyncDevicesProps) => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/parent")}
+            onClick={() => navigate("/parent", { replace: true })}
             aria-label={t("back")}
             className="mr-2"
           >

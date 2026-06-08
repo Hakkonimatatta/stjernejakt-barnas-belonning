@@ -151,7 +151,7 @@ const Home = ({ children, onSelectChild, onAddChild, language, hasSelectedChild 
           {children.map((child, index) => (
             <Card 
               key={child.id} 
-              className="p-6 bg-gradient-to-br from-card to-card/80 border-2 hover:border-primary/30 transform hover:scale-[1.02] transition-all duration-300 animate-slide-up"
+              className="p-6 bg-gradient-to-br from-card to-card/80 border-2 transition-all duration-300 animate-slide-up"
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className="flex items-center gap-6">

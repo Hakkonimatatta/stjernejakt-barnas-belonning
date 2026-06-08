@@ -156,12 +156,25 @@ const Tasks = ({
         <div className="space-y-4">
           {tasks.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
-              <div className="text-6xl mb-4 animate-bounce-subtle">✨</div>
-              <div className="text-xl font-semibold mb-2">{t("noTasksYet")}</div>
-              <div className="text-muted-foreground mb-4">{t("addNewTask")}</div>
-              <Button onClick={() => navigate("/parent")} className="w-full max-w-xs">
-                {t("goToParentMode")}
-              </Button>
+              {!hasSelectedChild ? (
+                <>
+                  <div className="text-6xl mb-4">🧒</div>
+                  <div className="text-xl font-semibold mb-2">{t("selectChildToDoTasks")}</div>
+                  <p className="text-muted-foreground mb-4">{t("selectChildToDoTasksHint")}</p>
+                  <Button onClick={() => navigate("/")} className="w-full max-w-xs">
+                    {t("goToHome")}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="text-6xl mb-4 animate-bounce-subtle">✨</div>
+                  <div className="text-xl font-semibold mb-2">{t("noTasksYet")}</div>
+                  <div className="text-muted-foreground mb-4">{t("addNewTask")}</div>
+                  <Button onClick={() => navigate("/parent")} className="w-full max-w-xs">
+                    {t("goToParentMode")}
+                  </Button>
+                </>
+              )}
             </div>
           ) : (
             tasks.map((task, index) => {
