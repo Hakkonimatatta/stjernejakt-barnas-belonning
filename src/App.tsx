@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { loadData, saveData, getDefaultTasks, getDefaultRewards, mergeAppData } from "@/lib/storage";
 import { initNotifications } from "@/lib/notifications";
 import { autoResetExpiredItems } from "@/lib/autoReset";
-import { loadLanguage, saveLanguage, Language } from "@/lib/i18n";
+import { loadLanguage, saveLanguage, Language, translate } from "@/lib/i18n";
 import { AppData, Child, Task, Reward } from "@/types";
 import Home from "./pages/Home";
 import Tasks from "./pages/Tasks";
@@ -101,7 +101,7 @@ const App = () => {
   // Schedule daily notifications if permission already granted (no prompt on load)
   useEffect(() => {
     if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-      initNotifications();
+      initNotifications(language, appData.settings?.notificationTimes ?? [16, 19]);
     }
   }, []);
 
@@ -372,11 +372,40 @@ const App = () => {
   };
 
   const handleAdjustPoints = (childId: string, points: number) => {
+    const now = Date.now();
+    const name = translate(language, points > 0 ? "activityAdjustmentAdded" : "activityAdjustmentDeducted");
     setAppData((prevData) => ({
       ...prevData,
       children: prevData.children.map((c) =>
-        c.id === childId ? { ...c, points: Math.max(0, Math.min(MAX_POINTS, c.points + points)) } : c
+        c.id === childId
+          ? {
+              ...c,
+              points: Math.max(0, Math.min(MAX_POINTS, c.points + points)),
+              activities: [
+                ...(c.activities || []),
+                {
+                  id: `activity_${now}`,
+                  type: "adjustment" as const,
+                  name,
+                  icon: points > 0 ? "📈" : "📉",
+                  points,
+                  timestamp: now,
+                },
+              ],
+            }
+          : c
       ),
+    }));
+  };
+
+  const handleUpdateNotificationTimes = (times: [number, number]) => {
+    setAppData((prevData) => ({
+      ...prevData,
+      settings: {
+        ...prevData.settings,
+        parentPin: prevData.settings?.parentPin ?? "1234",
+        notificationTimes: times,
+      },
     }));
   };
 
@@ -504,6 +533,8 @@ const App = () => {
                 onUndoLastActivity={handleUndoLastActivity}
                 language={language}
                 onChangeLanguage={setLanguage}
+                notificationTimes={appData.settings?.notificationTimes ?? [16, 19]}
+                onUpdateNotificationTimes={handleUpdateNotificationTimes}
               />
             }
           />

@@ -36,6 +36,8 @@ interface ParentModeProps {
   onUndoLastActivity: (childId: string, activityId: string) => void;
   language: Language;
   onChangeLanguage: (language: Language) => void;
+  notificationTimes: [number, number];
+  onUpdateNotificationTimes: (times: [number, number]) => void;
 }
 
 const ParentMode = ({
@@ -58,6 +60,8 @@ const ParentMode = ({
   onUndoLastActivity,
   language,
   onChangeLanguage,
+  notificationTimes,
+  onUpdateNotificationTimes,
 }: ParentModeProps) => {
   const navigate = useNavigate();
   const [pin, setPin] = useState("");
@@ -109,18 +113,32 @@ const ParentMode = ({
   });
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(notificationsGranted);
+  const [notifTime1, setNotifTime1] = useState(String(notificationTimes[0]).padStart(2, "0") + ":00");
+  const [notifTime2, setNotifTime2] = useState(String(notificationTimes[1]).padStart(2, "0") + ":00");
 
   const selectedChild = children.find((c) => c.id === selectedChildId);
   const hasChildren = children.length > 0;
 
   const handleEnableNotifications = async () => {
-    const granted = await initNotifications();
+    const granted = await initNotifications(language, notificationTimes);
     if (granted) {
       setNotificationsEnabled(true);
       toast.success(t("notificationsEnabled"));
     } else {
       toast.error(t("notificationsDenied"));
     }
+  };
+
+  const handleSaveNotificationTimes = () => {
+    const h1 = parseInt(notifTime1.split(":")[0], 10);
+    const h2 = parseInt(notifTime2.split(":")[0], 10);
+    if (isNaN(h1) || isNaN(h2)) return;
+    const times: [number, number] = [h1, h2];
+    onUpdateNotificationTimes(times);
+    if (notificationsEnabled) {
+      initNotifications(language, times);
+    }
+    toast.success(t("notificationTimesUpdated"));
   };
 
 
@@ -669,6 +687,7 @@ const ParentMode = ({
             {selectedChild.activities && selectedChild.activities.length > 0 && (
               <ActivityLog
                 activities={selectedChild.activities}
+                language={language}
                 onUndo={(activityId) => {
                   onUndoLastActivity(selectedChild.id, activityId);
                   toast.success(t("undoSuccess"));
@@ -783,12 +802,36 @@ const ParentMode = ({
             <h2 className="text-2xl font-bold text-card-foreground mb-1">{t("notificationsTitle")}</h2>
             <p className="text-sm text-muted-foreground mb-4">{t("notificationsDescription")}</p>
             {notificationsEnabled ? (
-              <p className="text-sm font-semibold text-green-600">✅ {t("notificationsEnabled")}</p>
+              <p className="text-sm font-semibold text-green-600 mb-4">✅ {t("notificationsEnabled")}</p>
             ) : (
-              <Button onClick={handleEnableNotifications} className="w-full">
+              <Button onClick={handleEnableNotifications} className="w-full mb-4">
                 {t("enableNotifications")}
               </Button>
             )}
+            <div className="space-y-3 border-t border-border pt-4">
+              <p className="text-sm font-semibold text-card-foreground">{t("notificationTimesLabel")}</p>
+              <div className="flex items-center gap-3">
+                <Label className="w-24 text-sm">{t("notificationTime1")}</Label>
+                <Input
+                  type="time"
+                  value={notifTime1}
+                  onChange={(e) => setNotifTime1(e.target.value)}
+                  className="h-10 w-36"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <Label className="w-24 text-sm">{t("notificationTime2")}</Label>
+                <Input
+                  type="time"
+                  value={notifTime2}
+                  onChange={(e) => setNotifTime2(e.target.value)}
+                  className="h-10 w-36"
+                />
+              </div>
+              <Button variant="outline" className="w-full" onClick={handleSaveNotificationTimes}>
+                {t("saveNotificationTimes")}
+              </Button>
+            </div>
           </Card>
         )}
 

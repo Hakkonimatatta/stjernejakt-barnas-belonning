@@ -1,6 +1,6 @@
 export interface Activity {
   id: string;
-  type: "task" | "reward"; // 'task' = task completed, 'reward' = reward purchased
+  type: "task" | "reward" | "adjustment" | "reset";
   name: string;
   icon: string;
   points: number;
@@ -43,5 +43,6 @@ export interface AppData {
     parentPin: string;
     requirePinForPurchase?: boolean;
     enable24hReset?: boolean;
+    notificationTimes?: [number, number];
   };
 }

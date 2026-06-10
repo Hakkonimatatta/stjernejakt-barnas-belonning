@@ -1,4 +1,17 @@
+import { Language } from "@/lib/i18n";
+
 const ICON = "/icon-180.png";
+
+const notificationTexts: Record<Language, [string, string]> = {
+  no: [
+    "Hva skjer i dag? Gjør ett oppdrag!",
+    "Tid for kveldsoppdrag?",
+  ],
+  en: [
+    "What's happening today? Do a task!",
+    "Time for an evening task?",
+  ],
+};
 
 const scheduleToday = (hour: number, title: string, body: string) => {
   const now = new Date();
@@ -11,7 +24,10 @@ const scheduleToday = (hour: number, title: string, body: string) => {
   }
 };
 
-export const initNotifications = async (): Promise<boolean> => {
+export const initNotifications = async (
+  language: Language = "no",
+  times: [number, number] = [16, 19]
+): Promise<boolean> => {
   if (typeof Notification === "undefined") return false;
   if (Notification.permission === "denied") return false;
 
@@ -21,10 +37,12 @@ export const initNotifications = async (): Promise<boolean> => {
   }
   if (permission !== "granted") return false;
 
-  scheduleToday(16, "Stjernejobb ⭐", "Hva skjer i dag? Gjør ett oppdrag!");
-  scheduleToday(19, "Stjernejobb ⭐", "Tid for kveldsoppdrag?");
+  const texts = notificationTexts[language] ?? notificationTexts.no;
+  scheduleToday(times[0], "Stjernejobb ⭐", texts[0]);
+  scheduleToday(times[1], "Stjernejobb ⭐", texts[1]);
   return true;
 };
 
 export const notificationsSupported = () => typeof Notification !== "undefined";
-export const notificationsGranted = () => typeof Notification !== "undefined" && Notification.permission === "granted";
+export const notificationsGranted = () =>
+  typeof Notification !== "undefined" && Notification.permission === "granted";
