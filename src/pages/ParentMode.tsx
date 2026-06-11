@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Task, Reward, Child } from "@/types";
@@ -518,26 +518,26 @@ const ParentMode = ({
                     <div className="flex gap-1 flex-shrink-0 ml-2">
                       {task.completed && (
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="icon"
-                          className="h-8 w-8 text-base"
+                          className="h-8 w-8 text-blue-500 border-blue-200 hover:bg-blue-50 hover:text-blue-600"
                           title={t("reset")}
                           onClick={() => {
                             onResetTask(selectedChild.id, task.id);
                             toast.success(t("taskReset"));
                           }}
                         >
-                          ↩️
+                          <RotateCcw className="h-4 w-4" />
                         </Button>
                       )}
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
-                        className="h-8 w-8 text-base text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="h-8 w-8 text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
                         title={t("delete")}
                         onClick={() => openDeleteDialog({ type: "task", id: task.id })}
                       >
-                        🗑️
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -624,26 +624,26 @@ const ParentMode = ({
                     <div className="flex gap-1 flex-shrink-0 ml-2">
                       {reward.purchased && (
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="icon"
-                          className="h-8 w-8 text-base"
+                          className="h-8 w-8 text-blue-500 border-blue-200 hover:bg-blue-50 hover:text-blue-600"
                           title={t("reset")}
                           onClick={() => {
                             onResetReward(selectedChild.id, reward.id);
                             toast.success(t("rewardReset"));
                           }}
                         >
-                          ↩️
+                          <RotateCcw className="h-4 w-4" />
                         </Button>
                       )}
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
-                        className="h-8 w-8 text-base text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="h-8 w-8 text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
                         title={t("delete")}
                         onClick={() => openDeleteDialog({ type: "reward", id: reward.id })}
                       >
-                        🗑️
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -905,26 +905,26 @@ const ParentMode = ({
                   <div className="flex gap-1 flex-shrink-0 ml-2">
                     {task.completed && (
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
-                        className="h-8 w-8 text-base"
+                        className="h-8 w-8 text-blue-500 border-blue-200 hover:bg-blue-50 hover:text-blue-600"
                         title={t("reset")}
                         onClick={() => {
                           onResetTask(selectedChild.id, task.id);
                           toast.success(t("taskReset"));
                         }}
                       >
-                        ↩️
+                        <RotateCcw className="h-4 w-4" />
                       </Button>
                     )}
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="icon"
-                      className="h-8 w-8 text-base text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="h-8 w-8 text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
                       title={t("delete")}
                       onClick={() => openDeleteDialog({ type: "task", id: task.id })}
                     >
-                      🗑️
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -961,26 +961,26 @@ const ParentMode = ({
                   <div className="flex gap-1 flex-shrink-0 ml-2">
                     {reward.purchased && (
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
-                        className="h-8 w-8 text-base"
+                        className="h-8 w-8 text-blue-500 border-blue-200 hover:bg-blue-50 hover:text-blue-600"
                         title={t("reset")}
                         onClick={() => {
                           onResetReward(selectedChild.id, reward.id);
                           toast.success(t("rewardReset"));
                         }}
                       >
-                        ↩️
+                        <RotateCcw className="h-4 w-4" />
                       </Button>
                     )}
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="icon"
-                      className="h-8 w-8 text-base text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="h-8 w-8 text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
                       title={t("delete")}
                       onClick={() => openDeleteDialog({ type: "reward", id: reward.id })}
                     >
-                      🗑️
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
