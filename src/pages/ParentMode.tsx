@@ -12,7 +12,7 @@ import { z } from "zod";
 import { Task, Reward, Child } from "@/types";
 import EmojiPicker, { getSuggestedEmojis } from "@/components/EmojiPicker";
 import ActivityLog from "@/components/ActivityLog";
-import { initNotifications, notificationsSupported, notificationsGranted } from "@/lib/notifications";
+import { initNotifications, cancelNotifications, notificationsSupported } from "@/lib/notifications";
 import { Language, translate } from "@/lib/i18n";
 
 interface ParentModeProps {
@@ -38,6 +38,8 @@ interface ParentModeProps {
   onChangeLanguage: (language: Language) => void;
   notificationTimes: [number, number];
   onUpdateNotificationTimes: (times: [number, number]) => void;
+  notificationsEnabled: boolean;
+  onToggleNotifications: (enabled: boolean) => void;
 }
 
 const ParentMode = ({
@@ -62,6 +64,8 @@ const ParentMode = ({
   onChangeLanguage,
   notificationTimes,
   onUpdateNotificationTimes,
+  notificationsEnabled,
+  onToggleNotifications,
 }: ParentModeProps) => {
   const navigate = useNavigate();
   const [pin, setPin] = useState("");
@@ -112,7 +116,6 @@ const ParentMode = ({
     cost: z.number().int().min(1, t("priceMin")).max(1000, t("priceMax")),
   });
 
-  const [notificationsEnabled, setNotificationsEnabled] = useState(notificationsGranted);
   const [notifTime1, setNotifTime1] = useState(String(notificationTimes[0]).padStart(2, "0") + ":00");
   const [notifTime2, setNotifTime2] = useState(String(notificationTimes[1]).padStart(2, "0") + ":00");
 
@@ -122,11 +125,17 @@ const ParentMode = ({
   const handleEnableNotifications = async () => {
     const granted = await initNotifications(language, notificationTimes);
     if (granted) {
-      setNotificationsEnabled(true);
+      onToggleNotifications(true);
       toast.success(t("notificationsEnabled"));
     } else {
       toast.error(t("notificationsDenied"));
     }
+  };
+
+  const handleDisableNotifications = () => {
+    cancelNotifications();
+    onToggleNotifications(false);
+    toast.success(t("notificationsDisabled"));
   };
 
   const handleSaveNotificationTimes = () => {
@@ -802,12 +811,18 @@ const ParentMode = ({
             <h2 className="text-2xl font-bold text-card-foreground mb-1">{t("notificationsTitle")}</h2>
             <p className="text-sm text-muted-foreground mb-4">{t("notificationsDescription")}</p>
             {notificationsEnabled ? (
-              <p className="text-sm font-semibold text-green-600 mb-4">✅ {t("notificationsEnabled")}</p>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-semibold text-green-600">✅ {t("notificationsEnabled")}</p>
+                <Button variant="outline" size="sm" onClick={handleDisableNotifications}>
+                  {t("disableNotifications")}
+                </Button>
+              </div>
             ) : (
               <Button onClick={handleEnableNotifications} className="w-full mb-4">
                 {t("enableNotifications")}
               </Button>
             )}
+            <p className="text-xs text-muted-foreground mb-4">{t("notificationsHint")}</p>
             <div className="space-y-3 border-t border-border pt-4">
               <p className="text-sm font-semibold text-card-foreground">{t("notificationTimesLabel")}</p>
               <div className="flex items-center gap-3">
