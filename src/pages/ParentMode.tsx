@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Task, Reward, Child } from "@/types";
 import EmojiPicker, { getSuggestedEmojis } from "@/components/EmojiPicker";
+import ChildMultiSelect from "@/components/ChildMultiSelect";
 import ActivityLog from "@/components/ActivityLog";
 import { initNotifications, cancelNotifications, notificationsSupported } from "@/lib/notifications";
 import { Language, translate } from "@/lib/i18n";
@@ -78,7 +79,8 @@ const ParentMode = ({
   const [rewardName, setRewardName] = useState("");
   const [rewardIcon, setRewardIcon] = useState("");
   const [rewardCost, setRewardCost] = useState("20");
-  const [rewardErrors, setRewardErrors] = useState<{ name?: string; icon?: string; cost?: string }>({});
+  const [rewardErrors, setRewardErrors] = useState<{ name?: string; icon?: string; cost?: string; children?: string }>({});
+  const [rewardChildIds, setRewardChildIds] = useState<string[]>([]);
   const [showAllTasks, setShowAllTasks] = useState(false);
   const [showAllRewards, setShowAllRewards] = useState(false);
   const [newPin, setNewPin] = useState("");
@@ -121,6 +123,10 @@ const ParentMode = ({
 
   const selectedChild = children.find((c) => c.id === selectedChildId);
   const hasChildren = children.length > 0;
+
+  useEffect(() => {
+    setRewardChildIds(selectedChildId ? [selectedChildId] : []);
+  }, [selectedChildId]);
 
   const handleEnableNotifications = async () => {
     const granted = await initNotifications(language, notificationTimes);
@@ -237,16 +243,28 @@ const ParentMode = ({
         cost: Number.parseInt(rewardCost, 10),
       });
 
-      onAddReward(selectedChild.id, {
-        name: validated.name,
-        icon: validated.icon,
-        cost: validated.cost,
+      if (rewardChildIds.length === 0) {
+        setRewardErrors({ children: t("selectAtLeastOneChild") });
+        toast.error(t("selectAtLeastOneChild"));
+        return;
+      }
+
+      rewardChildIds.forEach((childId) => {
+        onAddReward(childId, {
+          name: validated.name,
+          icon: validated.icon,
+          cost: validated.cost,
+        });
       });
 
       setRewardName("");
       setRewardIcon("");
       setRewardCost("20");
-      toast.success(t("rewardAdded"));
+      toast.success(
+        rewardChildIds.length > 1
+          ? t("rewardAddedForChildren", { count: rewardChildIds.length })
+          : t("rewardAdded")
+      );
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: { name?: string; icon?: string; cost?: string } = {};
@@ -605,6 +623,23 @@ const ParentMode = ({
                   />
                   {rewardErrors.cost && <p className="text-sm text-destructive mt-1">{rewardErrors.cost}</p>}
                 </div>
+
+                {children.length > 1 && (
+                  <div>
+                    <Label>{t("selectChildrenLabel")}</Label>
+                    <div className="mt-1">
+                      <ChildMultiSelect
+                        children={children}
+                        selectedIds={rewardChildIds}
+                        onChange={setRewardChildIds}
+                        allLabel={t("allChildrenOption")}
+                      />
+                    </div>
+                    {rewardErrors.children && (
+                      <p className="text-sm text-destructive mt-1">{rewardErrors.children}</p>
+                    )}
+                  </div>
+                )}
 
                 <Button
                   onClick={handleAddReward}
