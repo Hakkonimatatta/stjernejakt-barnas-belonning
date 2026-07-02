@@ -54,7 +54,7 @@ export function fireConfetti(opts?: Options) {
   const instance = ensureInstance();
   const isAndroid = isAndroidWebView();
   const defaults: Options = {
-    particleCount: isAndroid ? 100 : 120,
+    particleCount: isAndroid ? 200 : 240,
     spread: isAndroid ? 70 : 60,
     origin: { y: 0.6 },
     disableForReducedMotion: false,

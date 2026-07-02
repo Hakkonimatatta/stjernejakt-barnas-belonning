@@ -75,7 +75,8 @@ const ParentMode = ({
   const [taskName, setTaskName] = useState("");
   const [taskIcon, setTaskIcon] = useState("");
   const [taskPoints, setTaskPoints] = useState("5");
-  const [errors, setErrors] = useState<{ name?: string; icon?: string; points?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; icon?: string; points?: string; children?: string }>({});
+  const [taskChildIds, setTaskChildIds] = useState<string[]>([]);
   const [rewardName, setRewardName] = useState("");
   const [rewardIcon, setRewardIcon] = useState("");
   const [rewardCost, setRewardCost] = useState("20");
@@ -125,6 +126,7 @@ const ParentMode = ({
   const hasChildren = children.length > 0;
 
   useEffect(() => {
+    setTaskChildIds(selectedChildId ? [selectedChildId] : []);
     setRewardChildIds(selectedChildId ? [selectedChildId] : []);
   }, [selectedChildId]);
 
@@ -190,16 +192,26 @@ const ParentMode = ({
         points: Number.parseInt(taskPoints, 10),
       });
 
-      onAddTask(selectedChild.id, {
-        name: validated.name,
-        icon: validated.icon,
-        points: validated.points,
+      if (taskChildIds.length === 0) {
+        setErrors({ children: t("selectAtLeastOneChild") });
+        toast.error(t("selectAtLeastOneChild"));
+        return;
+      }
+
+      taskChildIds.forEach((childId) => {
+        onAddTask(childId, {
+          name: validated.name,
+          icon: validated.icon,
+          points: validated.points,
+        });
       });
 
       setTaskName("");
       setTaskIcon("");
       setTaskPoints("5");
-      toast.success(t("taskAdded"));
+      toast.success(
+        taskChildIds.length > 1 ? t("taskAddedForChildren", { count: taskChildIds.length }) : t("taskAdded")
+      );
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: { name?: string; icon?: string; points?: string } = {};
@@ -517,6 +529,21 @@ const ParentMode = ({
                   />
                   {errors.points && <p className="text-sm text-destructive mt-1">{errors.points}</p>}
                 </div>
+
+                {children.length > 1 && (
+                  <div>
+                    <Label>{t("selectChildrenLabel")}</Label>
+                    <div className="mt-1">
+                      <ChildMultiSelect
+                        children={children}
+                        selectedIds={taskChildIds}
+                        onChange={setTaskChildIds}
+                        allLabel={t("allChildrenOption")}
+                      />
+                    </div>
+                    {errors.children && <p className="text-sm text-destructive mt-1">{errors.children}</p>}
+                  </div>
+                )}
 
                 <Button
                   onClick={handleAddTask}
