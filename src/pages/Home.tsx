@@ -178,7 +178,8 @@ const Home = ({ children, onSelectChild, onAddChild, language, hasSelectedChild 
             <DialogTrigger asChild>
               {children.length === 0 ? (
                 <button
-                  className="fixed bottom-20 right-4 z-50 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-full shadow-2xl w-16 h-16 flex items-center justify-center border-4 border-background hover:scale-110 hover:shadow-glow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 animate-bounce-subtle"
+                  className="fixed right-4 z-50 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-full shadow-2xl w-16 h-16 flex items-center justify-center border-4 border-background hover:scale-110 hover:shadow-glow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 animate-bounce-subtle"
+                  style={{ bottom: "calc(5rem + env(safe-area-inset-bottom))" }}
                   aria-label={t("addChild")}
                   type="button"
                 >
