@@ -92,10 +92,20 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const checkAutoReset = () => {
       setAppData((prevData) => autoResetExpiredItems(prevData));
-    }, 60_000);
-    return () => clearInterval(interval);
+    };
+    const interval = setInterval(checkAutoReset, 60_000);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") checkAutoReset();
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", checkAutoReset);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", checkAutoReset);
+    };
   }, []);
 
   // Schedule daily notifications if permission already granted and user hasn't disabled them
