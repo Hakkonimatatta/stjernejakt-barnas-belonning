@@ -35,5 +35,15 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
   navigator.serviceWorker.register("/service-worker.js").catch((error) => {
     console.log("Service Worker registration failed:", error);
   });
+
+  // When a new service worker takes over (i.e. a new version was deployed),
+  // reload once so the user gets the fresh app shell without having to
+  // manually reinstall the PWA. localStorage data is untouched by this.
+  let refreshingAfterUpdate = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (refreshingAfterUpdate) return;
+    refreshingAfterUpdate = true;
+    window.location.reload();
+  });
 }
 
