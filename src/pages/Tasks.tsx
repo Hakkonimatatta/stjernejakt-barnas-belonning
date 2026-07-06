@@ -112,29 +112,29 @@ const Tasks = ({
   return (
     <div className="min-h-screen flex flex-col bg-background p-0 sm:p-0">
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-lg border-b-2 border-border/30 shadow-soft">
-      <div className="max-w-md mx-auto grid grid-cols-[auto,1fr,auto] items-center gap-3 sm:gap-4 px-3 sm:px-4 py-3">
+      <div className="w-full max-w-md mx-auto grid grid-cols-[auto,1fr,auto] items-center gap-1 sm:gap-4 px-2 sm:px-4 py-3">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate("/")}
           aria-label={t("back")}
-          className="hover:bg-primary/10"
+          className="hover:bg-primary/10 flex-shrink-0"
         >
           <ChevronLeft className="h-6 w-6" />
         </Button>
-        <span className="text-3xl sm:text-4xl font-bold text-primary text-center">{t("tasks")}</span>
-        <div className="flex items-center gap-2 justify-self-end">
+        <span className="text-2xl sm:text-4xl font-bold text-primary text-center truncate min-w-0 px-1">{t("tasks")}</span>
+        <div className="flex items-center gap-1 sm:gap-2 justify-self-end min-w-0">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/shop")}
-            className="text-base sm:text-lg font-semibold flex items-center gap-1 flex-shrink-0"
+            className="text-base sm:text-lg font-semibold flex items-center gap-1 px-2 sm:px-3 flex-shrink-0"
             aria-label={t("shop")}
           >
             <span className="text-xl sm:text-2xl">🛒</span>
-            {t("shop")}
+            <span className="hidden sm:inline">{t("shop")}</span>
           </Button>
-          <div className="flex items-center gap-1 bg-card/80 backdrop-blur-sm px-2.5 py-1.5 rounded-full border-2 border-border/30 shadow-sm flex-shrink-0">
+          <div className="flex items-center gap-1 bg-card/80 backdrop-blur-sm px-2 sm:px-2.5 py-1.5 rounded-full border-2 border-border/30 shadow-sm flex-shrink-0">
             <span className="text-lg">⭐</span>
             <span className="text-base font-bold text-star min-w-6 text-center">{currentPoints}</span>
           </div>
@@ -154,7 +154,7 @@ const Tasks = ({
         </DialogContent>
       </Dialog>
 
-      <div className="max-w-md mx-auto space-y-4 px-3 sm:px-0 py-3 sm:py-6 pb-28">
+      <div className="w-full max-w-md mx-auto space-y-4 px-3 sm:px-0 py-3 sm:py-6 pb-28">
         <div className="space-y-4">
           {tasks.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
@@ -191,36 +191,42 @@ const Tasks = ({
                   } ${recentlyCompletedId === task.id ? "animate-card-done" : ""}`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="flex items-center gap-2 sm:gap-4">
-                    <div
-                      className={`text-4xl sm:text-6xl transition-all duration-300 ${
-                        !isCompleted ? "hover:scale-110" : "grayscale"
-                      }`}
-                    >
-                      {task.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3
-                        className={`text-lg sm:text-2xl font-bold mb-1 truncate ${
-                          isCompleted ? "line-through text-muted-foreground" : "text-card-foreground"
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                      <div
+                        className={`text-4xl sm:text-6xl transition-all duration-300 ${
+                          !isCompleted ? "hover:scale-110" : "grayscale"
                         }`}
                       >
-                        {task.name}
-                      </h3>
-                      <div className="flex items-center gap-1">
-                        <span className="text-xl sm:text-3xl font-bold text-star">+{task.points}</span>
-                        <span className="text-xs sm:text-base text-muted-foreground">{t("points")}</span>
+                        {task.icon}
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <h3
+                          className={`text-lg sm:text-2xl font-bold mb-1 truncate ${
+                            isCompleted ? "line-through text-muted-foreground" : "text-card-foreground"
+                          }`}
+                        >
+                          {task.name}
+                        </h3>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xl sm:text-3xl font-bold text-star">+{task.points}</span>
+                          <span className="text-xs sm:text-base text-muted-foreground">{t("points")}</span>
+                        </div>
+                      </div>
+                      {isCompleted && (
+                        <div className="text-3xl sm:text-4xl animate-pop sm:hidden ml-auto">✅</div>
+                      )}
                     </div>
-                    {isCompleted ? (
-                      <div className="text-3xl sm:text-4xl animate-pop">✅</div>
-                    ) : (
+                    {!isCompleted && (
                       <Button
                         onClick={() => handleComplete(task)}
-                        className="h-12 sm:h-14 px-4 sm:px-6 text-base sm:text-lg font-bold bg-success text-white hover:bg-success/90"
+                        className="h-12 sm:h-14 px-4 sm:px-6 text-base sm:text-lg font-bold bg-success text-white hover:bg-success/90 w-full sm:w-auto"
                       >
                         ✓ {t("completeTask")}
                       </Button>
+                    )}
+                    {isCompleted && (
+                      <div className="hidden sm:block text-3xl sm:text-4xl animate-pop">✅</div>
                     )}
                   </div>
                 </Card>
