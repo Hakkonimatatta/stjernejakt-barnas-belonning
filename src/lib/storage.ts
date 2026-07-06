@@ -1,4 +1,4 @@
-import { AppData, Task, Reward, Child } from "@/types";
+import { AppData, Task, Reward, Child, Activity } from "@/types";
 import { Language, loadLanguage } from "@/lib/i18n";
 
 const STORAGE_KEY = "stjernejakt_data";
@@ -180,13 +180,24 @@ export const mergeAppData = (localData: AppData, remoteData: AppData): AppData =
       }
     });
 
-    const mergedPoints = localChild.points + remoteChild.points;
+    const activityMap = new Map<string, Activity>();
+    localChild.activities?.forEach((activity) => activityMap.set(activity.id, activity));
+    remoteChild.activities?.forEach((activity) => activityMap.set(activity.id, activity));
+    const mergedActivities = Array.from(activityMap.values()).sort((a, b) => b.timestamp - a.timestamp);
+
+    // Points aren't derived from the activity log (entries older than 8 days get
+    // pruned, so summing history would lose part of the balance), and neither
+    // side's running total is reliably "newer" without a sync timestamp. Taking
+    // the higher of the two avoids double-counting on repeat/round-trip imports,
+    // unlike summing, which always double-counts.
+    const mergedPoints = Math.max(localChild.points, remoteChild.points);
 
     return {
       ...localChild,
       points: mergedPoints,
       tasks: Array.from(taskMap.values()),
       rewards: Array.from(rewardMap.values()),
+      activities: mergedActivities,
     };
   });
 
