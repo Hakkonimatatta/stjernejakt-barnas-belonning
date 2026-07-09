@@ -110,24 +110,24 @@ const Shop = ({
     <div className="min-h-screen flex flex-col bg-background p-0 sm:p-0">
       {/* Sticky toppbar */}
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-lg border-b-2 border-border/30 shadow-soft">
-        <div className="max-w-md mx-auto flex items-center gap-2 px-4 py-3">
+        <div className="w-full max-w-md mx-auto flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate("/tasks")}
             aria-label={t("back")}
-            className="mr-2 hover:bg-primary/10"
+            className="mr-1 sm:mr-2 hover:bg-primary/10 flex-shrink-0"
           >
             <ChevronLeft className="h-6 w-6" />
           </Button>
-          <span className="text-3xl sm:text-4xl font-bold flex-1 text-center text-primary">{t("shop")}</span>
-          <div className="flex items-center gap-2">
+          <span className="text-2xl sm:text-4xl font-bold flex-1 text-center text-primary truncate min-w-0 px-1">{t("shop")}</span>
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             {selectedChildAvatar && (
-              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-card/80 border-2 border-border/30 shadow-md">
+              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-card/80 border-2 border-border/30 shadow-md flex-shrink-0">
                 <span className="text-xl">{selectedChildAvatar}</span>
               </div>
             )}
-            <div className="flex items-center justify-center gap-2 bg-card/80 backdrop-blur-sm px-3 py-2 rounded-full border-2 border-border/30 shadow-md">
+            <div className="flex items-center justify-center gap-2 bg-card/80 backdrop-blur-sm px-2 sm:px-3 py-2 rounded-full border-2 border-border/30 shadow-md flex-shrink-0">
               <span className="text-xl">⭐</span>
               <span className={`text-lg font-bold text-star ${pointsPop ? "animate-pop" : ""}`}>{currentPoints}</span>
             </div>
@@ -135,7 +135,7 @@ const Shop = ({
         </div>
       </div>
 
-      <div className="max-w-md mx-auto space-y-6 px-2 sm:px-0 py-4 sm:py-6 pb-28">
+      <div className="w-full max-w-md mx-auto space-y-6 px-2 sm:px-0 py-4 sm:py-6 pb-28">
 
         <div className="space-y-4">
           {rewards.length === 0 && !hasSelectedChild ? (
@@ -164,35 +164,38 @@ const Shop = ({
                   }`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`text-5xl sm:text-6xl transition-all duration-300 ${
-                        canAfford && !reward.purchased ? "hover:scale-110 animate-float" : ""
-                      }`}
-                    >
-                      {reward.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3
-                        className={`text-xl sm:text-2xl font-bold mb-1 truncate ${
-                          isLocked ? "line-through text-muted-foreground" : "text-card-foreground"
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div
+                        className={`text-5xl sm:text-6xl transition-all duration-300 ${
+                          canAfford && !reward.purchased ? "hover:scale-110 animate-float" : ""
                         }`}
-                        title={reward.name}
                       >
-                        {reward.name}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl sm:text-3xl font-bold text-star">{reward.cost}</span>
-                        <span className="text-sm sm:text-base text-muted-foreground">⭐ {t("points")}</span>
+                        {reward.icon}
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <h3
+                          className={`text-xl sm:text-2xl font-bold mb-1 truncate ${
+                            isLocked ? "line-through text-muted-foreground" : "text-card-foreground"
+                          }`}
+                          title={reward.name}
+                        >
+                          {reward.name}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl sm:text-3xl font-bold text-star">{reward.cost}</span>
+                          <span className="text-sm sm:text-base text-muted-foreground">⭐ {t("points")}</span>
+                        </div>
+                      </div>
+                      {isLocked && (
+                        <div className="text-4xl animate-pop sm:hidden ml-auto">🎉</div>
+                      )}
                     </div>
-                    {isLocked ? (
-                      <div className="text-4xl animate-pop">🎉</div>
-                    ) : (
+                    {!isLocked && (
                       <Button
                         onClick={() => handlePurchase(reward)}
                         disabled={!canAfford}
-                        className={`h-14 px-6 text-lg font-bold ${
+                        className={`h-14 px-6 text-lg font-bold w-full sm:w-auto ${
                           canAfford
                             ? "bg-accent text-accent-foreground hover:bg-accent/90"
                             : "opacity-40 cursor-not-allowed"
@@ -200,6 +203,9 @@ const Shop = ({
                       >
                         🛒 {t("buy")}
                       </Button>
+                    )}
+                    {isLocked && (
+                      <div className="hidden sm:block text-4xl animate-pop">🎉</div>
                     )}
                   </div>
                 </Card>
