@@ -43,7 +43,5 @@ export interface AppData {
     parentPin: string;
     requirePinForPurchase?: boolean;
     enable24hReset?: boolean;
-    notificationTimes?: [number, number];
-    notificationsEnabled?: boolean;
   };
 }

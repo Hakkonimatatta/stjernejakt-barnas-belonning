@@ -248,7 +248,7 @@ const Home = ({ children, onSelectChild, onAddChild, language, hasSelectedChild 
       <Dialog open={welcomeOpen} onOpenChange={setWelcomeOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl text-center">{t("welcome")}</DialogTitle>
+            <DialogTitle className="text-2xl text-center px-8">{t("welcome")}</DialogTitle>
             <DialogDescription className="text-center text-lg pt-4 space-y-3">
               <p>{t("welcomeMessage1")}</p>
               <p>{t("welcomeMessage2")}</p>

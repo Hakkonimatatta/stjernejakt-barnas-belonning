@@ -175,7 +175,7 @@ const Shop = ({
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3
-                          className={`text-xl sm:text-2xl font-bold mb-1 truncate ${
+                          className={`text-xl sm:text-2xl font-bold mb-1 break-words ${
                             isLocked ? "line-through text-muted-foreground" : "text-card-foreground"
                           }`}
                           title={reward.name}

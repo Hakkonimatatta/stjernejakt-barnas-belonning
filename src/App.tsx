@@ -4,7 +4,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { loadData, saveData, getDefaultTasks, getDefaultRewards, mergeAppData } from "@/lib/storage";
-import { initNotifications, cancelNotifications, notificationsGranted } from "@/lib/notifications";
 import { autoResetExpiredItems } from "@/lib/autoReset";
 import { loadLanguage, saveLanguage, Language, translate } from "@/lib/i18n";
 import { AppData, Child, Task, Reward } from "@/types";
@@ -106,14 +105,6 @@ const App = () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("focus", checkAutoReset);
     };
-  }, []);
-
-  // Schedule daily notifications if permission already granted and user hasn't disabled them
-  useEffect(() => {
-    const enabled = appData.settings?.notificationsEnabled !== false;
-    if (enabled && typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-      initNotifications(language, appData.settings?.notificationTimes ?? [16, 19]);
-    }
   }, []);
 
   const selectedChild = appData.children.find((c) => c.id === selectedChildId);
@@ -409,33 +400,6 @@ const App = () => {
     }));
   };
 
-  const handleUpdateNotificationTimes = (times: [number, number]) => {
-    setAppData((prevData) => ({
-      ...prevData,
-      settings: {
-        ...prevData.settings,
-        parentPin: prevData.settings?.parentPin ?? "1234",
-        notificationTimes: times,
-      },
-    }));
-  };
-
-  const handleToggleNotifications = (enabled: boolean) => {
-    if (!enabled) cancelNotifications();
-    setAppData((prevData) => ({
-      ...prevData,
-      settings: {
-        ...prevData.settings,
-        parentPin: prevData.settings?.parentPin ?? "1234",
-        notificationsEnabled: enabled,
-      },
-    }));
-  };
-
-  const notificationsEnabled =
-    appData.settings?.notificationsEnabled === true ||
-    (appData.settings?.notificationsEnabled === undefined && notificationsGranted());
-
   const handleUndoLastActivity = (childId: string, activityId: string) => {
     setAppData((prevData) => {
       const child = prevData.children.find((c) => c.id === childId);
@@ -560,10 +524,6 @@ const App = () => {
                 onUndoLastActivity={handleUndoLastActivity}
                 language={language}
                 onChangeLanguage={setLanguage}
-                notificationTimes={appData.settings?.notificationTimes ?? [16, 19]}
-                onUpdateNotificationTimes={handleUpdateNotificationTimes}
-                notificationsEnabled={notificationsEnabled}
-                onToggleNotifications={handleToggleNotifications}
               />
             }
           />

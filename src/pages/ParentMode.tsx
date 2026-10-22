@@ -13,7 +13,6 @@ import { Task, Reward, Child } from "@/types";
 import EmojiPicker, { getSuggestedEmojis } from "@/components/EmojiPicker";
 import ChildMultiSelect from "@/components/ChildMultiSelect";
 import ActivityLog from "@/components/ActivityLog";
-import { initNotifications, cancelNotifications, notificationsSupported } from "@/lib/notifications";
 import { Language, translate } from "@/lib/i18n";
 
 interface ParentModeProps {
@@ -37,10 +36,6 @@ interface ParentModeProps {
   onUndoLastActivity: (childId: string, activityId: string) => void;
   language: Language;
   onChangeLanguage: (language: Language) => void;
-  notificationTimes: [number, number];
-  onUpdateNotificationTimes: (times: [number, number]) => void;
-  notificationsEnabled: boolean;
-  onToggleNotifications: (enabled: boolean) => void;
 }
 
 const ParentMode = ({
@@ -63,10 +58,6 @@ const ParentMode = ({
   onUndoLastActivity,
   language,
   onChangeLanguage,
-  notificationTimes,
-  onUpdateNotificationTimes,
-  notificationsEnabled,
-  onToggleNotifications,
 }: ParentModeProps) => {
   const navigate = useNavigate();
   const [pin, setPin] = useState("");
@@ -119,9 +110,6 @@ const ParentMode = ({
     cost: z.number().int().min(1, t("priceMin")).max(1000, t("priceMax")),
   });
 
-  const [notifTime1, setNotifTime1] = useState(String(notificationTimes[0]).padStart(2, "0") + ":00");
-  const [notifTime2, setNotifTime2] = useState(String(notificationTimes[1]).padStart(2, "0") + ":00");
-
   const selectedChild = children.find((c) => c.id === selectedChildId);
   const hasChildren = children.length > 0;
 
@@ -129,35 +117,6 @@ const ParentMode = ({
     setTaskChildIds(selectedChildId ? [selectedChildId] : []);
     setRewardChildIds(selectedChildId ? [selectedChildId] : []);
   }, [selectedChildId]);
-
-  const handleEnableNotifications = async () => {
-    const granted = await initNotifications(language, notificationTimes);
-    if (granted) {
-      onToggleNotifications(true);
-      toast.success(t("notificationsEnabled"));
-    } else {
-      toast.error(t("notificationsDenied"));
-    }
-  };
-
-  const handleDisableNotifications = () => {
-    cancelNotifications();
-    onToggleNotifications(false);
-    toast.success(t("notificationsDisabled"));
-  };
-
-  const handleSaveNotificationTimes = () => {
-    const h1 = parseInt(notifTime1.split(":")[0], 10);
-    const h2 = parseInt(notifTime2.split(":")[0], 10);
-    if (isNaN(h1) || isNaN(h2)) return;
-    const times: [number, number] = [h1, h2];
-    onUpdateNotificationTimes(times);
-    if (notificationsEnabled) {
-      initNotifications(language, times);
-    }
-    toast.success(t("notificationTimesUpdated"));
-  };
-
 
   const handleUnlock = () => {
     if (pin === currentPin) {
@@ -767,7 +726,7 @@ const ParentMode = ({
             )}
 
             <Card className="p-6 bg-card border-4 border-border shadow-lg">
-              <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("enable24hReset")}</h2>
+              <h2 className="text-2xl font-bold text-card-foreground mb-4">{t("settings")}</h2>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <div className="font-semibold text-card-foreground">{t("enable24hReset")}</div>
@@ -864,50 +823,6 @@ const ParentMode = ({
                   </Button>
                 </div>
               ))}
-            </div>
-          </Card>
-        )}
-
-        {notificationsSupported() && (
-          <Card className="p-6 bg-card border-4 border-border shadow-lg">
-            <h2 className="text-2xl font-bold text-card-foreground mb-1">{t("notificationsTitle")}</h2>
-            <p className="text-sm text-muted-foreground mb-4">{t("notificationsDescription")}</p>
-            {notificationsEnabled ? (
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm font-semibold text-green-600">✅ {t("notificationsEnabled")}</p>
-                <Button variant="outline" size="sm" onClick={handleDisableNotifications}>
-                  {t("disableNotifications")}
-                </Button>
-              </div>
-            ) : (
-              <Button onClick={handleEnableNotifications} className="w-full mb-4">
-                {t("enableNotifications")}
-              </Button>
-            )}
-            <p className="text-xs text-muted-foreground mb-4">{t("notificationsHint")}</p>
-            <div className="space-y-3 border-t border-border pt-4">
-              <p className="text-sm font-semibold text-card-foreground">{t("notificationTimesLabel")}</p>
-              <div className="flex items-center gap-3">
-                <Label className="w-24 text-sm">{t("notificationTime1")}</Label>
-                <Input
-                  type="time"
-                  value={notifTime1}
-                  onChange={(e) => setNotifTime1(e.target.value)}
-                  className="h-10 w-36"
-                />
-              </div>
-              <div className="flex items-center gap-3">
-                <Label className="w-24 text-sm">{t("notificationTime2")}</Label>
-                <Input
-                  type="time"
-                  value={notifTime2}
-                  onChange={(e) => setNotifTime2(e.target.value)}
-                  className="h-10 w-36"
-                />
-              </div>
-              <Button variant="outline" className="w-full" onClick={handleSaveNotificationTimes}>
-                {t("saveNotificationTimes")}
-              </Button>
             </div>
           </Card>
         )}

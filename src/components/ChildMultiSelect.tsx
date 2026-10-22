@@ -29,7 +29,7 @@ const ChildMultiSelect = ({ children, selectedIds, onChange, allLabel }: ChildMu
         <Checkbox
           checked={allSelected}
           onCheckedChange={toggleAll}
-          className="h-5 w-5"
+          className="h-5 w-5 min-h-0 min-w-0"
         />
         <span className="font-semibold text-card-foreground">{allLabel}</span>
       </label>
@@ -42,7 +42,7 @@ const ChildMultiSelect = ({ children, selectedIds, onChange, allLabel }: ChildMu
             <Checkbox
               checked={selectedIds.includes(child.id)}
               onCheckedChange={() => toggleChild(child.id)}
-              className="h-5 w-5 flex-shrink-0"
+              className="h-5 w-5 min-h-0 min-w-0 flex-shrink-0"
             />
             <span className="text-xl flex-shrink-0">{child.avatar}</span>
             <span className="font-semibold text-card-foreground truncate">{child.name}</span>

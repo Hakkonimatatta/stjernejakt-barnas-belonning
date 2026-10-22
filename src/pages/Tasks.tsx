@@ -145,7 +145,7 @@ const Tasks = ({
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl">{t("welcomeTitle")}</DialogTitle>
+            <DialogTitle className="text-2xl px-8">{t("welcomeTitle")}</DialogTitle>
             <DialogDescription className="text-base pt-4">{t("welcomeMessage")}</DialogDescription>
           </DialogHeader>
           <Button onClick={() => setShowWelcome(false)} className="w-full mt-4">
@@ -202,7 +202,7 @@ const Tasks = ({
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3
-                          className={`text-lg sm:text-2xl font-bold mb-1 truncate ${
+                          className={`text-lg sm:text-2xl font-bold mb-1 break-words ${
                             isCompleted ? "line-through text-muted-foreground" : "text-card-foreground"
                           }`}
                         >
