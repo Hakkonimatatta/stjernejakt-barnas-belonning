@@ -5,6 +5,10 @@ export default {
   darkMode: ["class"],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   prefix: "",
+  future: {
+    // Hover-effekter bare på enheter med mus, så kort ikke blir stående forstørret etter trykk på mobil
+    hoverOnlyWhenSupported: true,
+  },
   theme: {
     container: {
       center: true,

@@ -15,7 +15,6 @@ export interface Child {
   tasks: Task[];
   rewards: Reward[];
   activities?: Activity[]; // Activity log
-  bonusLastAwardedAt?: number; // Timestamp for 24h bonus tracking
   enable24hReset?: boolean; // Per-child 24h reset toggle
 }
 

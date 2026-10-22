@@ -2,22 +2,21 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { ChevronLeft } from "lucide-react";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Activity, Child, Task } from "@/types";
+import { Child, Task } from "@/types";
 import { toast } from "sonner";
 import { initializeAudioContext, playSuccessSequence } from "@/lib/audioManager";
 import { Language, translate } from "@/lib/i18n";
 import { storageSet } from "@/lib/persistentStorage";
+import { vibrateSuccess } from "@/lib/haptics";
 
 interface TasksProps {
   tasks: Task[];
   onCompleteTask: (taskId: string) => void;
   currentPoints: number;
   enable24hReset: boolean;
-  activities: Activity[];
   language: Language;
   children: Child[];
   onSelectChild: (childId: string) => void;
@@ -29,37 +28,18 @@ const Tasks = ({
   onCompleteTask,
   currentPoints,
   enable24hReset,
-  activities,
   language,
   children,
   onSelectChild,
   hasSelectedChild,
 }: TasksProps) => {
-  const BONUS_TASK_TARGET = 3;
-  const BONUS_WINDOW_MS = 24 * 60 * 60 * 1000;
   const cleanupTimeout = useRef<number>();
   const navigate = useNavigate();
   const [showWelcome, setShowWelcome] = useState(false);
   const [recentlyCompletedId, setRecentlyCompletedId] = useState<string | null>(null);
-  const [progressValue, setProgressValue] = useState(0);
-  const [milestone, setMilestone] = useState<number | null>(null);
 
   const t = (key: Parameters<typeof translate>[1], params?: Parameters<typeof translate>[2]) =>
     translate(language, key, params);
-
-  useEffect(() => {
-    const now = Date.now();
-    const completedRecent = activities.filter(
-      (a) => a.type === "task" && now - a.timestamp <= BONUS_WINDOW_MS
-    ).length;
-    const percent = Math.min(100, Math.round((completedRecent / BONUS_TASK_TARGET) * 100));
-    setProgressValue(percent);
-
-    if (completedRecent >= BONUS_TASK_TARGET) {
-      setMilestone(completedRecent);
-      setTimeout(() => setMilestone(null), 2000);
-    }
-  }, [activities, BONUS_TASK_TARGET, BONUS_WINDOW_MS]);
 
   useEffect(() => {
     const welcomeKey = "stjernejakt_welcome_seen";
@@ -101,6 +81,7 @@ const Tasks = ({
       setRecentlyCompletedId(task.id);
       window.setTimeout(() => setRecentlyCompletedId(null), 650);
       playSuccessSound();
+      vibrateSuccess();
       void triggerConfetti();
       toast.success(t("taskCompleted", { points: task.points }), {
         duration: 2000,
@@ -236,35 +217,6 @@ const Tasks = ({
           )}
         </div>
 
-        {tasks.length > 0 && (
-          <div className="mt-8 mb-4">
-            <div className="text-sm font-semibold text-primary mb-2">{t("bonusTaskMessage")}</div>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium text-muted-foreground">{t("bonusGoal")}</span>
-              <span className="text-xs text-muted-foreground">
-                {t("bonusProgress", {
-                  count: Math.min(
-                    BONUS_TASK_TARGET,
-                    activities.filter((a) => a.type === "task" && Date.now() - a.timestamp <= BONUS_WINDOW_MS).length,
-                  ),
-                  total: BONUS_TASK_TARGET,
-                })}
-              </span>
-            </div>
-            <Progress value={progressValue} />
-            {milestone && (
-              <div className="flex items-center justify-center mt-2 animate-bounce text-2xl">
-                {milestone === 5 && "🌟"}
-                {milestone === 10 && "🏅"}
-                {milestone === 15 && "🎉"}
-                {milestone === 20 && "🚀"}
-                <span className="ml-2 font-bold text-success">
-                  {milestone} {t("done")}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
       </div>
       <BottomNav
         childrenProfiles={children}

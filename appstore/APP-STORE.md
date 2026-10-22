@@ -56,7 +56,6 @@ SLIK FUNGERER DET
 • Lag egne oppdrag og bestem hvor mange stjerner de gir
 • Lag belønninger barna kan «kjøpe» i butikken
 • Barna trykker «Fullfør oppgave» og får konfetti og stjerner
-• Bonusmål: gjør 3 oppdrag på en dag og få ekstra stjerner
 • Oppdragene nullstilles automatisk hver dag
 
 FOR FORELDRE
@@ -108,7 +107,6 @@ HOW IT WORKS
 • Create your own tasks and decide how many stars they're worth
 • Create rewards kids can "buy" in the shop
 • Kids tap "Complete task" and get confetti and stars
-• Bonus goal: complete 3 tasks in a day for extra stars
 • Tasks reset automatically every day
 
 FOR PARENTS

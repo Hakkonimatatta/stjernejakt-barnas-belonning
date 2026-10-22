@@ -184,9 +184,6 @@ export const translations = {
     rewardReset: "Belønning tilbakestilt!",
     rewardPurchasedMessage: "Belønning kjøpt!",
     childRemoved: "Barn fjernet",
-    bonusTaskMessage: "Gjør 3 oppdrag i dag og få 5 ekstra poeng!",
-    bonusProgress: "{count} av {total} mot bonusmålet",
-    bonusGoal: "Bonusmål",
     confirmDeleteTitle: "Slett {name}?",
     confirmDeleteDescription:
       "Er du sikker på at du vil slette dette barnet? Alle oppgaver og belønninger vil også bli slettet.",
@@ -407,9 +404,6 @@ export const translations = {
     trialPhaseLimit:
       "Thank you for using Stjernejobb! We are in the trial phase and will later add a premium version where you can have unlimited tasks, rewards and other fun things. For now, there is a maximum of 3 tasks and 3 rewards per child.",
     childRemoved: "Child removed",
-    bonusTaskMessage: "Complete any 3 tasks within 24 hours → 5 bonus points!",
-    bonusProgress: "{count} of {total} toward bonus",
-    bonusGoal: "Bonus goal",
     confirmDeleteTitle: "Delete {name}?",
     confirmDeleteDescription:
       "Are you sure you want to delete this child? All tasks and rewards will also be deleted.",

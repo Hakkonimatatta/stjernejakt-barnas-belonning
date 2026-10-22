@@ -18,9 +18,6 @@ import { storageRemove, storageSet } from "@/lib/persistentStorage";
 
 const App = () => {
   const MAX_POINTS = 9999;
-  const BONUS_TASK_TARGET = 3;
-  const BONUS_WINDOW_MS = 24 * 60 * 60 * 1000;
-  const BONUS_POINTS = 5;
   const SELECTED_CHILD_KEY = "stjernejakt_selected_child";
   const initialLanguage = loadLanguage();
   const [language, setLanguage] = useState<Language>(initialLanguage);
@@ -139,17 +136,9 @@ const App = () => {
             },
           ];
 
-          const recentTaskCount = activities.filter(
-            (a) => a.type === "task" && now - a.timestamp <= BONUS_WINDOW_MS
-          ).length;
-          const canAwardBonus =
-            recentTaskCount >= BONUS_TASK_TARGET &&
-            (!c.bonusLastAwardedAt || now - c.bonusLastAwardedAt > BONUS_WINDOW_MS);
-          const bonusPoints = canAwardBonus ? BONUS_POINTS : 0;
-
           return {
             ...c,
-            points: Math.min(MAX_POINTS, c.points + task.points + bonusPoints),
+            points: Math.min(MAX_POINTS, c.points + task.points),
             tasks: c.tasks.map((t) =>
               t.id === taskId
                 ? {
@@ -160,7 +149,6 @@ const App = () => {
                 : t
             ),
             activities,
-            bonusLastAwardedAt: canAwardBonus ? now : c.bonusLastAwardedAt,
           };
         }),
       };
@@ -475,7 +463,6 @@ const App = () => {
                 onCompleteTask={handleCompleteTask}
                 currentPoints={selectedChild?.points || 0}
                 enable24hReset={selectedChild?.enable24hReset !== false}
-                activities={selectedChild?.activities || []}
                 language={language}
                 children={appData.children}
                 onSelectChild={setSelectedChildId}

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Language, translate } from "@/lib/i18n";
 import { fireConfetti } from "@/lib/confetti";
 import { initializeAudioContext, playSuccessSequence } from "@/lib/audioManager";
+import { vibrateSuccess } from "@/lib/haptics";
 import { BottomNav } from "@/components/ui/bottom-nav";
 
 interface ShopProps {
@@ -62,6 +63,7 @@ const Shop = ({
       onPurchaseReward(rewardId);
       initializeAudioContext();
       void playSuccessSequence();
+      vibrateSuccess();
       fireConfetti();
       setConfirmOpen(true);
       setConfirmedRewardName(rewards.find(r => r.id === rewardId)?.name || "Reward");
@@ -94,6 +96,7 @@ const Shop = ({
         onPurchaseReward(reward.id);
         initializeAudioContext();
         void playSuccessSequence();
+        vibrateSuccess();
         fireConfetti();
         setConfirmOpen(true);
         setConfirmedRewardName(reward.name);

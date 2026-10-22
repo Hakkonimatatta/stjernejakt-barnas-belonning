@@ -4,40 +4,23 @@ import "./index.css";
 import { preInitConfetti } from "./lib/confetti";
 import { restoreNativeStorage } from "./lib/persistentStorage";
 
-// Debug for Android WebView
-console.log("🚀 App starting...", { 
-  userAgent: navigator.userAgent,
-  viewport: { width: window.innerWidth, height: window.innerHeight },
-  rootElement: document.getElementById("root")
-});
-
 // Pre-initialize confetti to avoid lag on first use
 preInitConfetti();
 
-// Extra guard: if module loading fails, surface it
-document.addEventListener("DOMContentLoaded", () => {
-  const root = document.getElementById("root");
-  if (!root) {
-    console.error("Root not found after DOMContentLoaded");
-  }
-});
-
 const rootElement = document.getElementById("root");
 if (rootElement) {
-  console.log("✅ Root element found, creating React app...");
   // Restore saved data from native storage (iOS/Android) before the app reads localStorage
   restoreNativeStorage().finally(() => {
     createRoot(rootElement).render(<App />);
-    console.log("✅ React app mounted!");
   });
 } else {
-  console.error("❌ Root element NOT found!");
+  console.error("Root element not found");
 }
 
 // Register service worker for PWA support (only in production, not during local dev)
 if ("serviceWorker" in navigator && location.protocol === "https:") {
   navigator.serviceWorker.register("/service-worker.js").catch((error) => {
-    console.log("Service Worker registration failed:", error);
+    console.warn("Service Worker registration failed:", error);
   });
 
   // When a new service worker takes over (i.e. a new version was deployed),
@@ -50,4 +33,3 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
     window.location.reload();
   });
 }
-
