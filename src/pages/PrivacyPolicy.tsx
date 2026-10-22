@@ -49,12 +49,12 @@ export default function PrivacyPolicy() {
 
           <section>
             <h2 className="text-xl font-bold text-blue-600 mb-3">
-              Sync Mellom Enheter
+              Overføring mellom enheter
             </h2>
             <p className="text-gray-700">
-              Hvis du bruker Sync-funksjonen, kan du dele data mellom enheter via 
-              en sikker kode. Data blir ikke lagret permanent på servere - det er kun 
-              en midlertidig overføring.
+              Med «Overfør data» i foreldremodus kan du lagre en fil med appens data og åpne
+              den på en annen enhet. Filen sendes ikke via oss – du bestemmer selv hvor den
+              lagres og hvem du deler den med.
             </p>
           </section>
 
@@ -67,9 +67,9 @@ export default function PrivacyPolicy() {
             </p>
             <ul className="list-disc list-inside text-gray-700 mt-2 space-y-1">
               <li>Ingen e-post eller telefonnummer blir samlet inn</li>
-              <li>Ingen sporring eller analyse</li>
-              <li>Ingen tredjepartsadvertering</li>
-              <li>Ingen data-deling med eksterne part</li>
+              <li>Ingen sporing eller analyse</li>
+              <li>Ingen reklame</li>
+              <li>Ingen deling av data med eksterne parter</li>
             </ul>
           </section>
 
@@ -78,7 +78,7 @@ export default function PrivacyPolicy() {
               Sikkerhet
             </h2>
             <p className="text-gray-700">
-              Siden all data lagres lokalt, er sikkerhetsen basert på enhetens innebygde sikkerhet. 
+              Siden all data lagres lokalt, er sikkerheten basert på enhetens innebygde sikkerhet. 
               Vi anbefaler å bruke PIN/biometri på enheten din for å beskytte dataen.
             </p>
           </section>
@@ -93,7 +93,7 @@ export default function PrivacyPolicy() {
             <ul className="list-disc list-inside text-gray-700 mt-2 space-y-1">
               <li>Slette appdata i innstillinger</li>
               <li>Avinstallere appen</li>
-              <li>Tøme nettleserens lokale lagring (på web)</li>
+              <li>Tømme nettleserens lokale lagring (på web)</li>
             </ul>
           </section>
 
@@ -109,7 +109,7 @@ export default function PrivacyPolicy() {
 
           <section className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
             <p className="text-sm text-gray-600">
-              <strong>Sist oppdatert:</strong> Januar 2026
+              <strong>Sist oppdatert:</strong> Oktober 2026
             </p>
           </section>
         </div>

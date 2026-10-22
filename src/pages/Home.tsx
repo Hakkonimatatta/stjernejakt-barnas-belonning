@@ -13,6 +13,7 @@ import { z } from "zod";
 import homeBackground from "@/assets/home-background.jpg";
 import { useWelcomeSound } from "@/hooks/useWelcomeSound";
 import { Language, translate } from "@/lib/i18n";
+import { storageSet } from "@/lib/persistentStorage";
 
 interface HomeProps {
   children: Child[];
@@ -256,7 +257,7 @@ const Home = ({ children, onSelectChild, onAddChild, language, hasSelectedChild 
           </DialogHeader>
           <Button
             onClick={() => {
-              localStorage.setItem("stjernejakt_welcome_seen", "true");
+              storageSet("stjernejakt_welcome_seen", "true");
               setWelcomeOpen(false);
             }}
             variant="primary"

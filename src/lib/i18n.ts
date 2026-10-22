@@ -1,3 +1,5 @@
+import { storageSet } from "@/lib/persistentStorage";
+
 export type Language = "no" | "en";
 
 const LANGUAGE_KEY = "stjernejakt_language";
@@ -16,7 +18,7 @@ export const loadLanguage = (): Language => {
 
 export const saveLanguage = (language: Language): void => {
   try {
-    localStorage.setItem(LANGUAGE_KEY, language);
+    storageSet(LANGUAGE_KEY, language);
   } catch (error) {
     console.error("Error saving language:", error);
   }
@@ -29,6 +31,8 @@ export const translations = {
     whoIsReady: "Hvem er klar for oppdrag?",
     addChild: "Legg til barn",
     begin: "Åpne oppdrag",
+    navHome: "Hjem",
+    navParents: "Foreldre",
     points: "poeng",
     parentMode: "🔒 Foreldremodus",
     addNewChild: "Legg til nytt barn",
@@ -250,6 +254,8 @@ export const translations = {
     whoIsReady: "Who's ready for tasks?",
     addChild: "Add child",
     begin: "Open tasks",
+    navHome: "Home",
+    navParents: "Parents",
     points: "points",
     parentMode: "🔒 Parent Mode",
     addNewChild: "Add new child",
@@ -267,6 +273,7 @@ export const translations = {
     back: "← Back",
     shop: "Shop",
     done: "Done!",
+    completeTask: "Complete task",
     completed: "✅",
     taskCompleted: "Great job! You earned {points} points! ⭐",
     welcomeTitle: "Welcome to Stjernejobb!",

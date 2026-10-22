@@ -14,6 +14,7 @@ import ParentMode from "./pages/ParentMode";
 import SyncDevices from "./pages/SyncDevices";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
+import { storageRemove, storageSet } from "@/lib/persistentStorage";
 
 const App = () => {
   const MAX_POINTS = 9999;
@@ -62,9 +63,9 @@ const App = () => {
   useEffect(() => {
     try {
       if (selectedChildId) {
-        localStorage.setItem(SELECTED_CHILD_KEY, selectedChildId);
+        storageSet(SELECTED_CHILD_KEY, selectedChildId);
       } else {
-        localStorage.removeItem(SELECTED_CHILD_KEY);
+        storageRemove(SELECTED_CHILD_KEY);
       }
     } catch (err) {
       console.warn("Failed to save selected child:", err);
@@ -364,7 +365,7 @@ const App = () => {
 
   const handleResetAllData = () => {
     try {
-      localStorage.removeItem("stjernejakt_data");
+      storageRemove("stjernejakt_data");
     } catch (err) {
       console.warn("Failed to clear storage:", err);
     }

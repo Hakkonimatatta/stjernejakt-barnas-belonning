@@ -1,5 +1,6 @@
 import { AppData, Task, Reward, Child, Activity } from "@/types";
 import { Language, loadLanguage } from "@/lib/i18n";
+import { storageSet } from "@/lib/persistentStorage";
 
 const STORAGE_KEY = "stjernejakt_data";
 
@@ -122,7 +123,7 @@ export const loadData = (language?: Language): AppData => {
 
 export const saveData = (data: AppData): void => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    storageSet(STORAGE_KEY, JSON.stringify(data));
   } catch (error) {
     console.error("Error saving data:", error);
   }

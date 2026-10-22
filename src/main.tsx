@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { preInitConfetti } from "./lib/confetti";
+import { restoreNativeStorage } from "./lib/persistentStorage";
 
 // Debug for Android WebView
 console.log("🚀 App starting...", { 
@@ -24,8 +25,11 @@ document.addEventListener("DOMContentLoaded", () => {
 const rootElement = document.getElementById("root");
 if (rootElement) {
   console.log("✅ Root element found, creating React app...");
-  createRoot(rootElement).render(<App />);
-  console.log("✅ React app mounted!");
+  // Restore saved data from native storage (iOS/Android) before the app reads localStorage
+  restoreNativeStorage().finally(() => {
+    createRoot(rootElement).render(<App />);
+    console.log("✅ React app mounted!");
+  });
 } else {
   console.error("❌ Root element NOT found!");
 }

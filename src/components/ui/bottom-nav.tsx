@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Child } from "@/types";
+import { loadLanguage, translate } from "@/lib/i18n";
 
 type BottomNavItem = {
   label: string;
@@ -26,11 +27,13 @@ export function BottomNav({ childrenProfiles = [], onSelectChild, hasSelectedChi
   const navigate = useNavigate();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pendingPath, setPendingPath] = useState<string>("/tasks");
+  const language = loadLanguage();
+  const t = (key: Parameters<typeof translate>[1]) => translate(language, key);
   const navItems: BottomNavItem[] = [
-    { label: "Hjem", icon: Home, path: "/" },
-    { label: "Oppdrag", icon: ListTodo, path: "/tasks" },
-    { label: "Butikk", icon: ShoppingCart, path: "/shop" },
-    { label: "Foreldre", icon: UserCog, path: "/parent" },
+    { label: t("navHome"), icon: Home, path: "/" },
+    { label: t("tasks"), icon: ListTodo, path: "/tasks" },
+    { label: t("shop"), icon: ShoppingCart, path: "/shop" },
+    { label: t("navParents"), icon: UserCog, path: "/parent" },
   ];
 
   const shouldPickChild = (path?: string) =>
@@ -99,7 +102,7 @@ export function BottomNav({ childrenProfiles = [], onSelectChild, hasSelectedChi
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Velg barn</DialogTitle>
+            <DialogTitle>{t("selectChildrenLabel")}</DialogTitle>
           </DialogHeader>
           <div
             className={cn(

@@ -10,6 +10,7 @@ import { Activity, Child, Task } from "@/types";
 import { toast } from "sonner";
 import { initializeAudioContext, playSuccessSequence } from "@/lib/audioManager";
 import { Language, translate } from "@/lib/i18n";
+import { storageSet } from "@/lib/persistentStorage";
 
 interface TasksProps {
   tasks: Task[];
@@ -66,7 +67,7 @@ const Tasks = ({
 
     if (!hasSeenWelcome) {
       setShowWelcome(true);
-      localStorage.setItem(welcomeKey, "true");
+      storageSet(welcomeKey, "true");
     }
   }, []);
 

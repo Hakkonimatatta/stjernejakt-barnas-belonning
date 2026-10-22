@@ -1,20 +1,13 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
+  // appId kan ikke endres etter publisering (Google Play bruker den allerede)
   appId: 'no.haako.stjernejakt',
-  appName: 'Stjernejakt',
+  appName: 'Stjernejobb',
   webDir: 'dist',
   server: {
     androidScheme: 'https'
   },
-  plugins: {
-    Camera: {
-      presentationStyle: 'popover'
-    }
-  },
-  ios: {
-    // Kamera-tillatelse spørres automatisk ved bruk
-  }
 };
 
 export default config;
